@@ -3,20 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
+/*   By: smazouz <smazouz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 22:04:21 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/18 09:25:13 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/18 22:20:06 by smazouz          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "Server.hpp"
-# include <fcntl.h>
-# include <sys/ioctl.h>
-# include <sys/socket.h>
-# include <netinet/in.h>
-# include <arpa/inet.h>
-# include <unistd.h>
+
 
 /* 
     - every attribute prefixed with __ is private
@@ -63,13 +58,13 @@ unsigned short Server::getPort() const
 
 void Server::setPort(std::string port)
 {
-    int port_int = std::stoi(port);
+    // int port_int = std::stoi(port);
     if (port.empty() || port.size() > 5 || atoi(port.c_str()) > 65535 || atoi(port.c_str()) < 0)
     {
         std::cerr << "Error: invalid port" << std::endl;
         exit(1);
     }
-    for ( int i  = 0; i < port.size(); i++)
+    for (unsigned int i  = 0; i < port.size(); i++)
     {
         if (!isdigit(port[i]))
         {
@@ -98,6 +93,8 @@ void Server::setPassword(std::string password)
 bool Server::run( void )
 {
     //connect to the server, return true if success, false if not
+    int __opt = 1;
+    
     __socket = socket(AF_INET, SOCK_STREAM, 0);
     if (__socket == -1)
     {
@@ -109,7 +106,7 @@ bool Server::run( void )
         std::cerr << "Error: setsockopt failed" << std::endl;
         return (false);
     }
-    if (fcntl(__socket, SOL_SOCKET, SO_REUSEADDR, 0, 0 ) < 0)// check if this is the right way to do it
+    if (fcntl(__socket, F_SETFD, O_NONBLOCK)  < 0)// check if this is the right way to do it
     {
         std::cerr << "Error: fcntl failed" << std::endl;
         return (false);
@@ -133,7 +130,7 @@ bool Server::run( void )
     __spollfd.revents = 0;
     __pollfds.push_back(__spollfd);// add the server socket to the pollfds vector, to keep track of it
     
-    int timeout = (1000 * 60); // 1 minute
+    int timeout = (1000 * 60 * 60); // 1 minute
     // infinite loop to keep the server running
 
     while (true)
@@ -155,7 +152,7 @@ bool Server::run( void )
         //loop through the pollfds vector to check which socket has an event
 
         // from here to the end of the loop, it's not complete yet and it's not working  (some cases are not handled yet)
-        for (int i = 0; i < __pollfds.size(); i++){
+        for (unsigned int i = 0; i < __pollfds.size(); i++){
             if (__pollfds[i].revents == 0) // if there is no event, continue
                 continue;
             if (__pollfds[i].revents != POLLIN) // if there is an event but it's not POLLIN, return false
@@ -173,7 +170,11 @@ bool Server::run( void )
                     std::cerr << "Error: accept failed" << std::endl;
                     return (false);
                 }
-                __pollfds.push_back({new_socket, POLLIN, 0}); // add the new client socket to the pollfds vector
+                struct pollfd __NewClient;
+                __NewClient.fd = new_socket;
+                __NewClient.events = POLLIN;
+                __NewClient.events = 0;
+                __pollfds.push_back(__NewClient); // add the new client socket to the pollfds vector
             }
             else // if the event is on a client socket, it means the client sent a message
             {
@@ -189,7 +190,15 @@ bool Server::run( void )
                 }
                 else // this is just for testing, it should be parsed and executed
                 {
+                    std::cout << "The server received mail from the client containing\n";
                     std::cout << buffer << std::endl;
+                }
+                char msg[39] = "we received your message sf ghiyarha\n";
+                valread = send(__pollfds[i].fd, msg,39, 0);
+                 if (valread < 0)
+                {
+                    std::cerr << "Error: send fiald\n";
+                    return(false);
                 }
                 // to be continued...
             }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
+/*   By: smazouz <smazouz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 00:52:38 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/18 09:10:46 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/18 19:34:24 by smazouz          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,11 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 
-# include "utils.hpp"
+// # include "utils.hpp"
+# include "Server.hpp"
+# include <iostream>
+#include<poll.h>
+
 
 
 class Client {
@@ -35,7 +39,7 @@ class Client {
         void            setNickname(std::string nickname);
         std::string     getUsername() const;
         void            setUsername(std::string username);
-        struct pollfd   getPollfd() const;
+        // struct pollfd   getPollfd() const;
         void            setPollfd(struct pollfd pollfd);
         bool            getIsLogged() const;
         void            setIsLogged(bool isLogged);
