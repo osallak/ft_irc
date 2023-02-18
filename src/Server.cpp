@@ -127,7 +127,7 @@ bool Server::run( void )
     };
     __spollfd.fd = __socket;
     __spollfd.events = POLLIN;
-    __spollfd.revents = 0;
+    // __spollfd.revents = 0;
     __pollfds.push_back(__spollfd);// add the server socket to the pollfds vector, to keep track of it
     
     int timeout = (1000 * 60 * 60); // 1 minute
@@ -155,7 +155,7 @@ bool Server::run( void )
         for (unsigned int i = 0; i < __pollfds.size(); i++){
             if (__pollfds[i].revents == 0) // if there is no event, continue
                 continue;
-            if (__pollfds[i].revents != POLLIN) // if there is an event but it's not POLLIN, return false
+            if (!(__pollfds[i].revents & POLLIN)) // if there is an event but it's not POLLIN, return false
             {
                 std::cerr << "Error: poll revents" << std::endl;
                 return (false);
@@ -173,8 +173,8 @@ bool Server::run( void )
                 struct pollfd __NewClient;
                 __NewClient.fd = new_socket;
                 __NewClient.events = POLLIN;
-                __NewClient.events = 0;
                 __pollfds.push_back(__NewClient); // add the new client socket to the pollfds vector
+                
             }
             else // if the event is on a client socket, it means the client sent a message
             {
@@ -190,6 +190,14 @@ bool Server::run( void )
                 }
                 else // this is just for testing, it should be parsed and executed
                 {
+                    if(__users.find(__pollfds[i].fd) != __users.end())
+                    {
+                        // Probably its user is trying to achieve something on the server.
+                    }
+                    else
+                    {
+                        // creation of connections;
+                    }
                     std::cout << "The server received mail from the client containing\n";
                     std::cout << buffer << std::endl;
                 }

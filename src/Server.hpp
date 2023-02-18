@@ -28,6 +28,7 @@
 #include <netinet/in.h>
 #include <errno.h>
 #include <fcntl.h>
+#include<map>
 
 class Server{
     private:
@@ -35,10 +36,11 @@ class Server{
         std::string                __password;
         int                        __socket;//remove this if it's not used
         struct sockaddr_in         __address;
-        // std::vector<Client>        __clients;
+        std::vector<Client>        __clients;
         std::vector<struct pollfd> __pollfds;
         struct pollfd              __spollfd;// s stands for server
-
+        // std::map<int,int>__users;
+        // std::map<int,int>__NewConnection;
     public:
 
         Server();
