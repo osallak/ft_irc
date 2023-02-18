@@ -26,7 +26,7 @@
     - getters should be const
     - do not change something if some of your team members are working on it
     - make a todo list of what you want to do
-    - do not push to master
+    - do not push to main
     - make a local branch for each feature you want to add, bug you want to fix, etc...
 
 */
