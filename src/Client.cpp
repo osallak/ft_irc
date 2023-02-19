@@ -50,3 +50,15 @@ bool Client::getIsLogged() const {
 void Client::setIsLogged(bool isLogged) {
     __isLogged = isLogged;
 }
+
+void  Client::appendBuffer(const std::string& buffer) {
+    __buffer += buffer;
+}
+
+void Client::setCommand(const std::string& command) {
+    __command = command;
+}
+
+std::string Client::getCommand() const {
+    return __command;
+}

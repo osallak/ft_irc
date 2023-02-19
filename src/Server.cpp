@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 22:04:21 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 15:37:33 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/19 18:08:56 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -178,7 +178,12 @@ bool Server::run( void )
                 // TODO: check if the client is trying to log in or send a command, fugure out how to add it to clients vector
                 int valread;
                 char buffer[1024] = {0};
-                if ((valread = read(__pollfds[i].fd, buffer, 1024)) == 0) // if the client disconnected
+                if ((valread = read(__pollfds[i].fd, buffer, 1024)) < 0)
+                {
+                    std::cerr << "Error: read failed" << std::endl;
+                    return (false);
+                }
+                if (valread == 0) // if the client disconnected
                 {
                     std::cout << "Client disconnected" << std::endl;
                     close(__pollfds[i].fd);
@@ -187,16 +192,26 @@ bool Server::run( void )
                 }
                 else // this is just for testing, it should be parsed and executed
                 {
+                    std::string tmpBuffer = buffer;
                     if(__users.find(__pollfds[i].fd) != __users.end())
                     {
-                        
+                        __users[__pollfds[i].fd].appendBuffer(tmpBuffer);
+                        if (tmpBuffer.find('\n') != std::string::npos)
+                        {
+                            if (tmpBuffer[tmpBuffer.find('\n') - 1] == '\r') 
+                                tmpBuffer.erase(tmpBuffer.find('\n') - 1, 1);
+                            __users[__pollfds[i].fd].setCommand(tmpBuffer);
+                            // TODO: parse the command
+                        }
+                        else {
+                            __users[__pollfds[i].fd].appendBuffer(tmpBuffer);
+                        }
                     }
                     else
                     {
                         // this means the client is not authenticated yet
                     }
-                    std::cout << "Client: \t";
-                    std::cout << buffer << std::endl;
+                    std::cout << "Client: \t" << buffer << std::endl;
                 }
             }
         }

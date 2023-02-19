@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 00:52:38 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 14:53:11 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/19 18:07:46 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class Client {
         struct pollfd   __pollfd;
         bool           __isLogged;
         std::string     __buffer;
+        std::string     __command;
         
     public:
         Client();
@@ -43,5 +44,8 @@ class Client {
         void            setPollfd(struct pollfd pollfd);
         bool            getIsLogged() const;
         void            setIsLogged(bool isLogged);
+        void            appendBuffer(const std::string& buffer);
+        void            setCommand(const std::string& command);
+        std::string     getCommand() const;
 };
 #endif
