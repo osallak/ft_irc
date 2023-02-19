@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
+/*   By: uss4ma <uss4ma@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/14 22:44:09 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/18 07:44:25 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/19 13:33:13 by uss4ma           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@
 # include <poll.h>
 # include <signal.h>
 
+# include "Client.hpp"
+# include "Server.hpp"
 
 // this file is for the common functions, classes, etc. that are used in multiple files
 // for example, the error functions...
