@@ -3,15 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: smazouz <smazouz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 22:04:21 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/18 22:20:06 by smazouz          ###   ########.fr       */
+/*   Updated: 2023/02/19 02:32:17 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "Server.hpp"
-
+#include <cstdlib>//for atoi and stuff...
 
 /* 
     - every attribute prefixed with __ is private
@@ -155,11 +155,8 @@ bool Server::run( void )
         for (unsigned int i = 0; i < __pollfds.size(); i++){
             if (__pollfds[i].revents == 0) // if there is no event, continue
                 continue;
-            if (!(__pollfds[i].revents & POLLIN)) // if there is an event but it's not POLLIN, return false
-            {
-                std::cerr << "Error: poll revents" << std::endl;
-                return (false);
-            }
+            if (!(__pollfds[i].revents & POLLIN)) // if there is an event but it's not POLLIN, move on to the next socket
+                continue;
             if (__pollfds[i].fd == __socket) // if the event is on the server socket, it means a new client is trying to connect
             {
                 int new_socket;
@@ -192,20 +189,21 @@ bool Server::run( void )
                 {
                     if(__users.find(__pollfds[i].fd) != __users.end())
                     {
-                        // Probably its user is trying to achieve something on the server.
+                        
                     }
                     else
                     {
-                        // creation of connections;
+                        // this means the client is not authenticated yet 
                     }
-                    std::cout << "The server received mail from the client containing\n";
+                    std::cout << "Client: \t";
                     std::cout << buffer << std::endl;
                 }
-                char msg[39] = "we received your message sf ghiyarha\n";
-                valread = send(__pollfds[i].fd, msg,39, 0);
+                std::string msg;std::cout << "enter message ";std::getline(std::cin, msg);
+                // std::cout << msg << std::endl;
+                valread = send(__pollfds[i].fd, msg.append("\n").c_str(),msg.size(), 0);
                  if (valread < 0)
                 {
-                    std::cerr << "Error: send fiald\n";
+                    std::cerr << "Error: send failed\n";
                     return(false);
                 }
                 // to be continued...

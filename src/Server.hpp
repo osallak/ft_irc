@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: smazouz <smazouz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/14 22:25:51 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/18 19:37:59 by smazouz          ###   ########.fr       */
+/*   Updated: 2023/02/19 02:20:46 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,11 @@ class Server{
         std::string                __password;
         int                        __socket;//remove this if it's not used
         struct sockaddr_in         __address;
-        std::vector<Client>        __clients;
+        // std::vector<Client>        __clients;
         std::vector<struct pollfd> __pollfds;
         struct pollfd              __spollfd;// s stands for server
-        // std::map<int,int>__users;
-        // std::map<int,int>__NewConnection;
+        std::map<int,Client>        __users;
+        std::map<int,Client>        __NewConnections;
     public:
 
         Server();
