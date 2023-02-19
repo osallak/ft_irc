@@ -6,13 +6,14 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 22:04:21 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 18:08:56 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/19 22:41:37 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "Server.hpp"
 #include <cstdlib>//for atoi and stuff...
-
+# include <algorithm>//for std::replace
+# include <string>
 /* 
     - every attribute prefixed with __ is private
     - every attribute prefixed with _ is protected
@@ -25,6 +26,7 @@
     - make a local branch for each feature you want to add, bug you want to fix, etc...
 
 */
+
 Server::Server() : __port(-1), __password("")
 {
     
@@ -195,17 +197,13 @@ bool Server::run( void )
                     std::string tmpBuffer = buffer;
                     if(__users.find(__pollfds[i].fd) != __users.end())
                     {
-                        __users[__pollfds[i].fd].appendBuffer(tmpBuffer);
                         if (tmpBuffer.find('\n') != std::string::npos)
                         {
-                            if (tmpBuffer[tmpBuffer.find('\n') - 1] == '\r') 
-                                tmpBuffer.erase(tmpBuffer.find('\n') - 1, 1);
                             __users[__pollfds[i].fd].setCommand(tmpBuffer);
+                            parseCommand(__pollfds[i].fd);
                             // TODO: parse the command
                         }
-                        else {
-                            __users[__pollfds[i].fd].appendBuffer(tmpBuffer);
-                        }
+                        __users[__pollfds[i].fd].appendBuffer(tmpBuffer);
                     }
                     else
                     {
@@ -231,4 +229,9 @@ int Server::authentification( void )
     // it receives the password from the client and compares it to the one in the server
     // if it's the same, it returns 1, else it returns 0
     return (0);
+}
+
+void    Server::parseCommand( int fd )
+{
+    int commandType = __users[fd].getCommandType();
 }
