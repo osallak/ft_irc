@@ -1,6 +1,6 @@
 # pragma once
 
-# include "../include/utils.hpp"/
+# include "../include/utils.hpp"
 # include "Client.hpp"
 
 class Channel{
@@ -10,6 +10,7 @@ class Channel{
         std::map<int, Client> __channelClients;
         Client               __channelModerator;
         int                  __channelType;//0 = public, 1 = private
+        std::string           __channelPassword;
 
     public:
         Channel();
@@ -31,3 +32,4 @@ class Channel{
         void setChannelType(const int& channelType);
 
 };
+

@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 00:52:38 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 01:14:46 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/19 14:53:11 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,9 @@ class Client {
         std::string     __nickname;
         std::string     __username;
         struct pollfd   __pollfd;
-        bool           __isLogged;// true if the client is logged in with a nickname and a correct password 
-                                  // this will be used if the make sure that the client is sending commands
-                                  // and not just trying to connect to the server (sending password is not like sending a regular command)
+        bool           __isLogged;
+        std::string     __buffer;
+        
     public:
         Client();
         ~Client();

@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 22:04:21 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 02:32:17 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/19 15:37:33 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,7 +130,7 @@ bool Server::run( void )
     // __spollfd.revents = 0;
     __pollfds.push_back(__spollfd);// add the server socket to the pollfds vector, to keep track of it
     
-    int timeout = (1000 * 60 * 60); // 1 minute
+    int timeout = (1000 * 60); // 1 minute
     // infinite loop to keep the server running
 
     while (true)
@@ -193,20 +193,11 @@ bool Server::run( void )
                     }
                     else
                     {
-                        // this means the client is not authenticated yet 
+                        // this means the client is not authenticated yet
                     }
                     std::cout << "Client: \t";
                     std::cout << buffer << std::endl;
                 }
-                std::string msg;std::cout << "enter message ";std::getline(std::cin, msg);
-                // std::cout << msg << std::endl;
-                valread = send(__pollfds[i].fd, msg.append("\n").c_str(),msg.size(), 0);
-                 if (valread < 0)
-                {
-                    std::cerr << "Error: send failed\n";
-                    return(false);
-                }
-                // to be continued...
             }
         }
     }
@@ -216,7 +207,7 @@ bool Server::run( void )
 void Server::disconnect( void )
 {
     //disconnect from the server
-    // it shoud be called with the client to disconnect as a parameter (or something like that)
+    // it should be called with the client to disconnect as a parameter (or something like that)
 }
 
 int Server::authentification( void )
