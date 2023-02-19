@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
+/*   By: smazouz <smazouz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/14 22:25:51 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 02:20:46 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/19 22:08:39 by smazouz          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,10 @@ class Server{
         void                   disconnect( void );
         int                    authentification( void );
         std::string            getCommand( void );
+        std::pair<std::string,std::string> ParceConnection(std::string cmd);
+        std::vector<std::pair<std::string, std::string> > ParceConnectionLine(std::string cmd);
+        void                    SetUserInf(std::pair<std::string,std::string> cmd, int UserId);
+
 };
 
 

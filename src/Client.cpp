@@ -4,6 +4,7 @@
 Client::Client() {
     __nickname = "";
     __username = "";
+    __password = "";
     __isLogged = false;
 }
 
@@ -50,3 +51,20 @@ bool Client::getIsLogged() const {
 void Client::setIsLogged(bool isLogged) {
     __isLogged = isLogged;
 }
+void            Client::setIsbuffer(std::string buffer)
+{
+    __buffer = buffer;
+}
+std::string     Client::getIsbuffer()
+{
+    return(__buffer);
+}
+void            Client::setIspassword(std::string password)
+{
+    __password = password;
+}
+std::string     Client::getIspassword()
+{
+    return(__password);
+}
+

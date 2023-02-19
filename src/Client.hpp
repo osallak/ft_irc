@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
+/*   By: smazouz <smazouz@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 00:52:38 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 01:14:46 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/19 16:50:48 by smazouz          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,13 @@
 
 class Client {
     private:
+        std::string     __password;
         std::string     __nickname;
         std::string     __username;
         struct pollfd   __pollfd;
-        bool           __isLogged;// true if the client is logged in with a nickname and a correct password 
-                                  // this will be used if the make sure that the client is sending commands
-                                  // and not just trying to connect to the server (sending password is not like sending a regular command)
+        bool           __isLogged;
+        std::string     __buffer;
+        
     public:
         Client();
         ~Client();
@@ -43,5 +44,9 @@ class Client {
         void            setPollfd(struct pollfd pollfd);
         bool            getIsLogged() const;
         void            setIsLogged(bool isLogged);
+        void            setIsbuffer(std::string buffer);
+        std::string     getIsbuffer();
+        void            setIspassword(std::string password);
+        std::string     getIspassword();
 };
 #endif
