@@ -1,5 +1,5 @@
 #include"Client.hpp"
-
+# include "../include/utils.hpp"
 
 Client::Client() {
     __nickname = "";
@@ -61,4 +61,43 @@ void Client::setCommand(const std::string& command) {
 
 std::string Client::getCommand() const {
     return __command;
+}
+
+std::string getCommandWithoutParams(std::string command) {
+    std::string commandWithoutParams = command;
+    size_t pos = commandWithoutParams.find(" ");
+    if (pos != std::string::npos)
+        commandWithoutParams = commandWithoutParams.substr(0, pos);
+    return commandWithoutParams;
+}
+
+int Client::getCommandType() const {
+    std::string command = getCommandWithoutParams(__command);//get command without prefix (lowercase)
+
+    if (command == "join")
+        return JOIN;
+    else if (command == "part")
+        return PART;
+    else if (command == "ping")
+        return PING;
+    else if (command == "pong")
+        return PONG;
+    else if (command == "privmsg")
+        return PRIVMSG;
+    else if (command == "quit")
+        return QUIT;
+    else if (command == "kick")
+        return KICK;
+    else if (command == "mode")
+        return MODE;
+    else if (command == "invite")
+        return INVITE;
+    else if (command == "topic")
+        return TOPIC;
+    else if (command == "names")
+        return NAMES;
+    else if (command == "list")
+        return LIST;
+    else
+        return UNKNOWN;
 }

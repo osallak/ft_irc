@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 00:52:38 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 18:07:46 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/19 22:42:17 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,5 +47,6 @@ class Client {
         void            appendBuffer(const std::string& buffer);
         void            setCommand(const std::string& command);
         std::string     getCommand() const;
+        int             getCommandType() const;
 };
 #endif

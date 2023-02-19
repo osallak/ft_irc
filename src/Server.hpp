@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/14 22:25:51 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 02:20:46 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/19 22:38:11 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,8 +54,8 @@ class Server{
         void                   setPassword(std::string password);
         bool                   run( void );
         void                   disconnect( void );
-        int                    authentification( void );
-        std::string            getCommand( void );
+        int                    authentification( void );  
+        void                   parseCommand( int fd );
 };
 
 
