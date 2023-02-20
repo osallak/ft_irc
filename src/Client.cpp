@@ -4,6 +4,7 @@
 Client::Client() {
     __nickname = "";
     __username = "";
+    __password = "";
     __isLogged = false;
 }
 
@@ -61,5 +62,21 @@ void Client::setCommand(const std::string& command) {
 
 std::string Client::getCommand() const {
     return __command;
+}
+void            Client::setIsbuffer(std::string buffer)
+{
+    __buffer = buffer;
+}
+std::string     Client::getIsbuffer()
+{
+    return(__buffer);
+}
+void            Client::setIspassword(std::string password)
+{
+    __password = password;
+}
+std::string     Client::getIspassword()
+{
+    return(__password);
 }
 

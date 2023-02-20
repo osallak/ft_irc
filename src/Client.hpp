@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 00:52:38 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 22:42:17 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/20 11:31:32 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 
 class Client {
     private:
+        std::string     __password;
         std::string     __nickname;
         std::string     __username;
         struct pollfd   __pollfd;
@@ -48,5 +49,9 @@ class Client {
         void            setCommand(const std::string& command);
         std::string     getCommand() const;
         int             getCommandType() const;
+        void            setIsbuffer(std::string buffer);
+        std::string     getIsbuffer();
+        void            setIspassword(std::string password);
+        std::string     getIspassword();
 };
 #endif

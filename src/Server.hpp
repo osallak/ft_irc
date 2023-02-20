@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/14 22:25:51 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 22:38:11 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/20 11:30:41 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,8 +54,12 @@ class Server{
         void                   setPassword(std::string password);
         bool                   run( void );
         void                   disconnect( void );
-        int                    authentification( void );  
-        void                   parseCommand( int fd );
+        int                    authentification( void );
+        std::string            getCommand( void );
+        std::pair<std::string,std::string> ParceConnection(std::string cmd);
+        std::vector<std::pair<std::string, std::string> > ParceConnectionLine(std::string cmd);
+        void                    SetUserInf(std::pair<std::string,std::string> cmd, int UserId);
+
 };
 
 
