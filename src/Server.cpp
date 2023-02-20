@@ -6,7 +6,7 @@
 /*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 22:04:21 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 22:41:37 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/20 11:27:14 by osallak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,7 +200,6 @@ bool Server::run( void )
                         if (tmpBuffer.find('\n') != std::string::npos)
                         {
                             __users[__pollfds[i].fd].setCommand(tmpBuffer);
-                            parseCommand(__pollfds[i].fd);
                             // TODO: parse the command
                         }
                         __users[__pollfds[i].fd].appendBuffer(tmpBuffer);
@@ -229,9 +228,4 @@ int Server::authentification( void )
     // it receives the password from the client and compares it to the one in the server
     // if it's the same, it returns 1, else it returns 0
     return (0);
-}
-
-void    Server::parseCommand( int fd )
-{
-    int commandType = __users[fd].getCommandType();
 }
