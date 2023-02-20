@@ -394,7 +394,7 @@ void    Server::parseCommand( int fd )
     }
     for(size_t i = 0 ; i < res.size();i++)
         std::cout << res[i] << std::endl;
-    // (void)fd;
+    // (void)fd;  
         if (command == KICK)
         parseKick(res, fd);
     // else if (command == MODE)
