@@ -22,7 +22,7 @@ class Channel{
         std::string           getChannelName() const;
         std::string           getChannelTopic() const;
         std::map<int, Client> getChannelClients() const;
-        Client                getChannelModerator() const;
+        int                   getChannelModerator() const;
         int                   getChannelType() const;
 
         void setChannelName(const std::string& channelName);

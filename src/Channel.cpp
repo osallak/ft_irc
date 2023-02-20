@@ -48,7 +48,7 @@ std::map<int, Client> Channel::getChannelClients() const
     return (__channelClients);
 }
 
-Client Channel::getChannelModerator() const
+int Channel::getChannelModerator() const
 {
     return (__channelModerator);
 }

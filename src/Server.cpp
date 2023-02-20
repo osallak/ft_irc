@@ -6,7 +6,7 @@
 /*   By: aanjaimi <aanjaimi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 22:04:21 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/20 11:49:30 by aanjaimi         ###   ########.fr       */
+/*   Updated: 2023/02/20 14:21:48 by aanjaimi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,7 +216,7 @@ bool Server::run( void )
                             if (tmpBuffer[tmpBuffer.find('\n') - 1] == '\r') 
                                 tmpBuffer.erase(tmpBuffer.find('\n') - 1, 1);
                             __users[__pollfds[i].fd].setCommand(tmpBuffer);
-                            // TODO: parse the command
+                            parseCommand(__pollfds[i].fd);
                         }
                         else {
                             __users[__pollfds[i].fd].appendBuffer(tmpBuffer);
@@ -256,8 +256,8 @@ void    Server::parseCommand( int fd )
     size_t                      pos = 0;
     std::string                 str;
 
-    line = getCommand();
-    // line = "KICK myChan ayoub anjaimi";
+    // line = getCommand();
+    line = "KICK myChan ayoub anjaimi";
     while ((pos = line.find(' ')) != std::string::npos)
     {
         str = line.substr(0, pos);
@@ -272,32 +272,47 @@ void    Server::parseCommand( int fd )
     res.erase(res.begin());
     if (command == KICK)
         parseKick(res, fd);
-    else if (command == MODE)
-        parseMode(res, fd);
-    else if (command == INVITE)
-        parseInvite(res, fd);
-    else if (command == TOPIC)
-        parseTopic(res, fd);
-    else if (command == PING)
-        parsePing(res, fd);
-    else if (command == PONG)
-        parsePong(res, fd);
-    else if (command == QUIT)
-        parseQuit(res, fd);
-    else if (command == ERROR)
-        parseError(res, fd);
-    else if (command == PART)
-        parsePart(res, fd);
-    else if (command == NAMES)
-        parseNames(res, fd);
-    else if (command == LIST)
-        parseList(res, fd);
-    else if (command == PRIVMSG)
-        parsePrivmsg(res, fd);
-    else if (command == JOIN)
-        parseJoin(res, fd);
-        
-        
+    // else if (command == MODE)
+    //     parseMode(res, fd);
+    // else if (command == INVITE)
+    //     parseInvite(res, fd);
+    // else if (command == TOPIC)
+    //     parseTopic(res, fd);
+    // else if (command == PING)
+    //     parsePing(res, fd);
+    // else if (command == PONG)
+    //     parsePong(res, fd);
+    // else if (command == QUIT)
+    //     parseQuit(res, fd);
+    // else if (command == ERROR)
+    //     parseError(res, fd);
+    // else if (command == PART)
+    //     parsePart(res, fd);
+    // else if (command == NAMES)
+    //     parseNames(res, fd);
+    // else if (command == LIST)
+    //     parseList(res, fd);
+    // else if (command == PRIVMSG)
+    //     parsePrivmsg(res, fd);
+    // else if (command == JOIN)
+    //     parseJoin(res, fd);
+}
+
+void    Server::parseJoin(std::vector<std::string> &vec, int fd)
+{
+    size_t i;
+
+    if (vec.size() <= 1)
+        std::cout << "ERR_NEEDMOREPARAMS(461)\n";
+    for (i = 0;i < __channels.size();++i)
+    {
+        if (__channels[vec[0]].getChannelName() == vec[0])
+            break ;
+    }
+    if (i == __channels.size())
+        std::cout << "ERR_NOSUCHCHANNEL(403)\n";
+    if (__channels[vec[0]].getChannelModerator() != fd)
+        std::cout << "ERR_CHANOPRIVSNEEDED(482)\n";
 }
 
 void    Server::parseKick(std::vector<std::string> &vec, int fd)
@@ -308,10 +323,11 @@ void    Server::parseKick(std::vector<std::string> &vec, int fd)
         std::cout << "ERR_NEEDMOREPARAMS(461)\n";
     for (i = 0;i < __channels.size();++i)
     {
-        if (__channels[i].getChannelName() == vec[0])
+        if (__channels[vec[0]].getChannelName() == vec[0])
             break ;
     }
     if (i == __channels.size())
-        std::cout << "ERR_NOSUCHCHANNEL(403\n)";
-    if (__users[fd]. == '')
+        std::cout << "ERR_NOSUCHCHANNEL(403)\n";
+    if (__channels[vec[0]].getChannelModerator() != fd)
+        std::cout << "ERR_CHANOPRIVSNEEDED(482)\n";
 }

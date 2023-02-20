@@ -6,7 +6,7 @@
 /*   By: aanjaimi <aanjaimi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/14 22:25:51 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/20 11:43:05 by aanjaimi         ###   ########.fr       */
+/*   Updated: 2023/02/20 14:22:10 by aanjaimi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ class Server{
         void                   setCommand( std::string );
         void                   parseCommand( int fd );
         void                   parseKick( std::vector<std::string> &, int);
+        void                   parseJoin( std::vector<std::string> &, int);
 };
 
 
