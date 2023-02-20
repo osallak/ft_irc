@@ -1,9 +1,12 @@
 {
     "files.associations": {
+        "*.excalidraw": "json",
+        "*.excalidrawlib": "json",
         "string": "cpp",
         "vector": "cpp",
         "iostream": "cpp",
         "iosfwd": "cpp",
+<<<<<<< HEAD
         "__bit_reference": "cpp",
         "__config": "cpp",
         "__debug": "cpp",
@@ -62,5 +65,9 @@
         "typeinfo": "cpp",
         "unordered_map": "cpp",
         "utility": "cpp"
+=======
+        "cstdlib": "cpp",
+        "map": "cpp"
+>>>>>>> ayoub
     }
 }

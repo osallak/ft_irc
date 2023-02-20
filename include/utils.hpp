@@ -1,17 +1,6 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   utils.hpp                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/02/14 22:44:09 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 23:32:33 by osallak          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 # pragma once
 
+# include <algorithm>
 # include <iostream>
 # include <string>
 # include <vector>
@@ -31,22 +20,21 @@
 # include <signal.h>
 
 
+# define KICK "kick"
+# define MODE "mode"
+# define INVITE "invite"
+# define TOPIC "topic"
+# define PING "ping"
+# define PONG "pong"
+# define QUIT "quit"
+# define ERROR "error"
+# define PART "part"
+# define NAMES "names"
+# define LIST "list"
+# define PRIVMSG "privmsg"
+# define JOIN "join"
 
-enum {
-    PART,
-    JOIN,
-    PING,
-    PONG,
-    PRIVMSG,
-    QUIT,
-    UNKNOWN,
-    KICK,
-    MODE,
-    INVITE,
-    TOPIC,
-    NAMES,
-    LIST,
-};
+
 
 /*
 PING

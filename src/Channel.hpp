@@ -8,7 +8,7 @@ class Channel{
         std::string           __channelName;
         std::string           __channelTopic;
         std::map<int, Client> __channelClients;
-        Client               __channelModerator;
+        int                    __channelModerator;
         int                  __channelType;//0 = public, 1 = private
         std::string           __channelPassword;
 

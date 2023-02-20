@@ -1,19 +1,8 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/02/14 22:25:51 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/20 11:30:41 by osallak          ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 # pragma once
 
 // # include "utils.hpp"
 # include "Client.hpp"
+# include "Channel.hpp"
 # include <iostream>
 # include <vector>
 # include <fcntl.h>
@@ -40,6 +29,7 @@ class Server{
         std::vector<struct pollfd> __pollfds;
         struct pollfd              __spollfd;// s stands for server
         std::map<int,Client>        __users;
+        std::map<std::string,Channel> __channels;
         std::map<int,Client>        __NewConnections;
     public:
 
@@ -60,6 +50,9 @@ class Server{
         std::vector<std::pair<std::string, std::string> > ParceConnectionLine(std::string cmd);
         void                    SetUserInf(std::pair<std::string,std::string> cmd, int UserId);
 
+        void                   setCommand( std::string );
+        void                   parseCommand( int fd );
+        void                   parseKick( std::vector<std::string> &, int);
 };
 
 
