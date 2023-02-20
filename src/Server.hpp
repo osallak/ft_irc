@@ -53,6 +53,10 @@ class Server{
         void                   setCommand( std::string );
         void                   parseCommand( int fd );
         void                   parseKick( std::vector<std::string> &, int);
+        void                   parsePrivmsg( std::vector<std::string> &, int);
+        
+        bool                    isInChannel(Channel &channel, int fd) const;
+        int                     GetUserId(std::string UserName);
 };
 
 

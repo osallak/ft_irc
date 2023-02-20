@@ -43,10 +43,10 @@ std::string Channel::getChannelTopic() const
     return (__channelTopic);
 }
 
-std::map<int, Client> Channel::getChannelClients() const
-{
-    return (__channelClients);
-}
+// std::map<int, Client> Channel::getChannelClients() const
+// {
+//     return (__channelClients);
+// }
 
 int Channel::getChannelModerator() const
 {
@@ -68,10 +68,10 @@ void Channel::setChannelTopic(const std::string& channelTopic)
     __channelTopic = channelTopic;
 }
 
-void Channel::setChannelClients(const std::map<int, Client>& channelClients)
-{
-    __channelClients = channelClients;
-}
+// void Channel::setChannelClients(const std::map<int, Client>& channelClients)
+// {
+//     __channelClients = channelClients;
+// }
 
 void Channel::setChannelModerator(const int& channelModerator)
 {
@@ -82,6 +82,24 @@ void Channel::setChannelType(const int& channelType)
 {
     __channelType = channelType;
 }
+int Channel::getChannelClients(std::string __UserName) const
+{
+    std::map<int, std::string>::const_iterator it = __channelClients.begin();
 
+    for (; it != __channelClients.end(); ++it) {
+        if(it->second == __UserName)
+            return(it->first);
+    }
+    return(-1);
+}
+void Channel::setChannelClients(int __UserId , std::string __UserName)
+{
+    __channelClients[__UserId] = __UserName;
+}
+
+std::map<int, std::string> Channel::getChannelClientsMap() const
+{
+    return (__channelClients);
+}
 // Path: src/Channel.cpp
 // created: 2023/02/19 5:14:09 by osallak

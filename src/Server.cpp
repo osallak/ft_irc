@@ -3,6 +3,7 @@
 #include <cstdlib>//for atoi and stuff...
 # include <algorithm>//for std::replace
 # include <string>
+# include "../include/utils.hpp"
 /* 
     - every attribute prefixed with __ is private
     - every attribute prefixed with _ is protected
@@ -51,10 +52,10 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
 {
     if(cmd.first != "Error")
     {
-        if(__NewConnections.find(UserId)->second.getIspassword().empty())
+        if(__NewConnections.find(UserId)->second.getPassword().empty())
         {
             if(cmd.first == "password" && cmd.second == __password)
-                __NewConnections.find(UserId)->second.setIspassword(cmd.second);
+                __NewConnections.find(UserId)->second.setPassword(cmd.second);
             else
                 std::cout << "Error45\n";
         }
@@ -296,21 +297,21 @@ bool Server::run( void )
                     std::string tmpBuffer = buffer;
                     if(__users.find(__pollfds[i].fd) != __users.end())
                     {
-                        std::string CurrentBuffer = __users.find(__pollfds[i].fd)->second.getIsbuffer();
+                        std::string CurrentBuffer = __users.find(__pollfds[i].fd)->second.getBuffer();
                         CurrentBuffer+=buffer;
-                        __users.find(__pollfds[i].fd)->second.setIsbuffer(CurrentBuffer);
+                        __users.find(__pollfds[i].fd)->second.setBuffer(CurrentBuffer);
                         if(CurrentBuffer.find("\n") != std::string::npos)
                         {
                             parseCommand(__pollfds[i].fd);
-                            __users.find(__pollfds[i].fd)->second.setIsbuffer("");
+                            __users.find(__pollfds[i].fd)->second.setBuffer("");
                         }
                     }
                     else
                     {
-                        std::string CurrentBuffer = __NewConnections.find(__pollfds[i].fd)->second.getIsbuffer();
+                        std::string CurrentBuffer = __NewConnections.find(__pollfds[i].fd)->second.getBuffer();
                         CurrentBuffer+=buffer;
-                        __NewConnections.find(__pollfds[i].fd)->second.setIsbuffer(CurrentBuffer);
-                        CurrentBuffer =   __NewConnections.find(__pollfds[i].fd)->second.getIsbuffer();
+                        __NewConnections.find(__pollfds[i].fd)->second.setBuffer(CurrentBuffer);
+                        CurrentBuffer =   __NewConnections.find(__pollfds[i].fd)->second.getBuffer();
                         if(CurrentBuffer.find("\n") != std::string::npos)
                         {
                             int __Backtoline = 0;
@@ -329,13 +330,13 @@ bool Server::run( void )
                                     std::cout << "Error110\n";
                                 else
                                 {
-                                    __NewConnections.find(__pollfds[i].fd)->second.setIspassword(cmds[0].second);
+                                    __NewConnections.find(__pollfds[i].fd)->second.setPassword(cmds[0].second);
                                     __NewConnections.find(__pollfds[i].fd)->second.setUsername(cmds[1].second);
                                     __NewConnections.find(__pollfds[i].fd)->second.setUsername(cmds[2].second);
                                 }
 
                             }
-                            __NewConnections.find(__pollfds[i].fd)->second.setIsbuffer("");
+                            __NewConnections.find(__pollfds[i].fd)->second.setBuffer("");
                         }
                         // this means the client is not authenticated yet
                     }
@@ -379,7 +380,7 @@ void    Server::parseCommand( int fd )
     size_t                      pos = 0;
     std::string                 str;
 
-    line = __users[fd].getIsbuffer();
+    line = __users[fd].getBuffer();
     // line = "KICK myChan ayoub anjaimi";
     while ((pos = line.find(' ')) != std::string::npos)
     {
@@ -395,10 +396,10 @@ void    Server::parseCommand( int fd )
     for(size_t i = 0 ; i < res.size();i++)
         std::cout << res[i] << std::endl;
     // (void)fd;  
-        if (command == KICK)
-        parseKick(res, fd);
+        // if (command == KICK)
+        //     parseKick(res, fd);
     // else if (command == MODE)
-    //     parseMode(res, fd);
+        // parseMode(res, fd);
     // else if (command == INVITE)
     //     parseInvite(res, fd);
     // else if (command == TOPIC)
@@ -417,25 +418,106 @@ void    Server::parseCommand( int fd )
     //     parseNames(res, fd);
     // else if (command == LIST)
     //     parseList(res, fd);
-    // else if (command == PRIVMSG)
-    //     parsePrivmsg(res, fd);
+    if (command == PRIVMSG)
+        parsePrivmsg(res, fd);
     // else if (command == JOIN)
     //     parseJoin(res, fd);
 }
 
-void    Server::parseKick(std::vector<std::string> &vec, int fd)
+// void    Server::parseKick(std::vector<std::string> &vec, int fd)
+// {
+//     size_t i;
+
+//     (void)fd;
+//     if (vec.size() <= 1)
+//         std::cout << "ERR_NEEDMOREPARAMS(461)\n";
+//     for (i = 0;i < __channels.size();++i)
+//     {
+//         if (__channels[vec[0]].getChannelName() == vec[0])
+//             break ;
+//     }
+//     if (i == __channels.size())
+//         std::cout << "ERR_NOSUCHCHANNEL(403\n)";
+//     // if (__users[fd]. == '')
+// }
+
+void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
 {
-    size_t i;
+    // size_t i;
 
     (void)fd;
-    if (vec.size() <= 1)
-        std::cout << "ERR_NEEDMOREPARAMS(461)\n";
-    for (i = 0;i < __channels.size();++i)
+    if (vec.size() == 0)
+        std::cout << "ERR_NEEDMOREPARAMS(461)\n"; 
+    if (vec.size() > 2)
+        std::cout << "ERR_TOOMANYARGUMENTS(461)\n";// TODO: check if it's the right error code
+    
+    std::string msg = vec[1];
+    std::string targets = vec[0];
+    std::vector<std::string> targetsVec;
+
+    while (targets.find(',') != std::string::npos)
     {
-        if (__channels[vec[0]].getChannelName() == vec[0])
-            break ;
+        targetsVec.push_back(targets.substr(0, targets.find(',')));
+        targets.erase(0, targets.find(',') + 1);
     }
-    if (i == __channels.size())
-        std::cout << "ERR_NOSUCHCHANNEL(403\n)";
-    // if (__users[fd]. == '')
+    targetsVec.push_back(targets);
+
+   for (size_t i = 0; i < targetsVec.size(); ++i)
+   {
+        if (targetsVec[i][0] == CHANNEL_PREFIX) {
+
+            std::map<std::string, Channel>::iterator it = __channels.find(targetsVec[i]);// search for the channel in the channels map 
+
+            if ( it == __channels.end() ) {
+                std::cout << "ERR_NOSUCHCHANNEL(403)\n";
+                return;
+            }
+            else
+            {
+                // TODO: check if the user is in the channel
+                Channel channel = it->second;
+                if (isInChannel(channel, fd) == false)
+                {
+                    std::cout << "ERR_CANNOTSENDTOCHAN(404)\n";
+                    return;
+                }
+                std::map<int, std::string>::iterator it2;
+                for (it2 = channel.getChannelClientsMap().begin(); it2 != channel.getChannelClientsMap().end(); ++it2)
+                {
+                    //TODO: send message to the user
+                    std::cout << "MSG TO USER: " << it2->second << " in channel:  " << channel.getChannelName() << " :" << msg << std::endl;
+                }
+            }
+        } else {
+            int userId = GetUserId(targetsVec[i]);//TODO: implement getUserId
+            if (userId == -1)
+                std::cout << "ERR_NOSUCHNICK(401)\n";
+            else {
+                std::cout << "MSG TO USER: " << targetsVec[i] << " :" << msg << std::endl;
+                //TODO: send message to the user
+
+            } 
+        }
+    }
+}
+
+bool    Server::isInChannel(Channel &channel, int fd) const
+{
+    std::map<int, std::string>::iterator it;
+    for (it = channel.getChannelClientsMap().begin(); it != channel.getChannelClientsMap().end(); ++it)
+    {
+        if (it->first == fd)
+            return (true);
+    }
+    return (false);
+}
+
+int    Server::GetUserId(std::string UserName)
+{
+    std::map<int, Client>::iterator it;
+    for (it = __users.begin(); it != __users.end(); ++it) {
+        if(it->second.getUsername() == UserName)
+            return(it->first);
+    }
+    return -1;
 }
