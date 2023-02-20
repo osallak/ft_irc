@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: osallak <osallak@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aanjaimi <aanjaimi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/17 22:04:21 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 18:08:56 by osallak          ###   ########.fr       */
+/*   Updated: 2023/02/19 19:42:08 by aanjaimi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -231,4 +231,28 @@ int Server::authentification( void )
     // it receives the password from the client and compares it to the one in the server
     // if it's the same, it returns 1, else it returns 0
     return (0);
+}
+
+void    Server::parseCommand( void )
+{
+    std::string                 line;
+    std::string                 command;
+    std::vector<std::string>    res;
+    size_t                      pos = 0;
+    std::string                 str;
+
+    line = getCommand();
+    while ((pos = line.find(' ')) != std::string::npos)
+    {
+        str = line.substr(0, pos);
+        res.push_back(str);
+        line.erase(0, pos + 1);
+    }
+    res.push_back(line);
+    command = res[0];
+    for (size_t i = 0; i < command.size(); ++i){
+        command[i] = (char)(tolower(command[i]));
+    }
+    if (command == KICK)
+        parseKick();
 }

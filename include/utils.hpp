@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: uss4ma <uss4ma@student.42.fr>              +#+  +:+       +#+        */
+/*   By: aanjaimi <aanjaimi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/14 22:44:09 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 13:33:13 by uss4ma           ###   ########.fr       */
+/*   Updated: 2023/02/19 19:41:44 by aanjaimi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # pragma once
 
+# include <algorithm>
 # include <iostream>
 # include <string>
 # include <vector>
@@ -32,6 +33,21 @@
 
 # include "Client.hpp"
 # include "Server.hpp"
+
+
+# define KICK "kick"
+# define MODE "mode"
+# define INVITE "invite"
+# define TOPIC "topic"
+# define PING "ping"
+# define PONG "pong"
+# define QUIT "quit"
+# define ERROR "error"
+# define PART "part"
+# define NAMES "names"
+# define LIST "list"
+# define PRIVMSG "privmsg"
+# define JOIN "join"
 
 // this file is for the common functions, classes, etc. that are used in multiple files
 // for example, the error functions...
