@@ -82,6 +82,18 @@ void Channel::setChannelType(const int& channelType)
 {
     __channelType = channelType;
 }
-
+int Channel::getChannelClients(std::string __UserName) const
+{
+    std::map<int, std::string>::iterator it;
+    for (it = __channelClients.begin(); it != __channelClients.end(); ++it) {
+        if(it->second = __UserName)
+            return(it->first);
+    }
+    return(-1);
+}
+void Channel::setChannelClients(int __UserId , std::string __UserName)
+{
+    __channelClients[__UserId] = __UserName;
+}
 // Path: src/Channel.cpp
 // created: 2023/02/19 5:14:09 by osallak
