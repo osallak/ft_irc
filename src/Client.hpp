@@ -1,16 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Client.hpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: aanjaimi <aanjaimi@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/02/17 00:52:38 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 18:17:50 by aanjaimi         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 
@@ -23,6 +10,7 @@
 
 class Client {
     private:
+        std::string     __password;
         std::string     __nickname;
         std::string     __username;
         struct pollfd   __pollfd;
@@ -47,5 +35,10 @@ class Client {
         void            appendBuffer(const std::string& buffer);
         void            setCommand(const std::string& command);
         std::string     getCommand() const;
+        int             getCommandType() const;
+        void            setIsbuffer(std::string buffer);
+        std::string     getIsbuffer();
+        void            setIspassword(std::string password);
+        std::string     getIspassword();
 };
 #endif

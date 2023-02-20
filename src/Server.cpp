@@ -1,18 +1,8 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: aanjaimi <aanjaimi@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/02/17 22:04:21 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/20 14:21:48 by aanjaimi         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 # include "Server.hpp"
+#include <utility>
 #include <cstdlib>//for atoi and stuff...
-
+# include <algorithm>//for std::replace
+# include <string>
 /* 
     - every attribute prefixed with __ is private
     - every attribute prefixed with _ is protected
@@ -25,6 +15,14 @@
     - make a local branch for each feature you want to add, bug you want to fix, etc...
 
 */
+std::string trim(const std::string& str) {
+    size_t first = str.find_first_not_of(' ');
+    if (std::string::npos == first) {
+        return str;
+    }
+    size_t last = str.find_last_not_of(' ');
+    return str.substr(first, (last - first + 1));
+}
 Server::Server() : __port(-1), __password("")
 {
     
@@ -49,10 +47,95 @@ Server &Server::operator=(const Server &copy)
     }
     return (*this);
 }
+void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
+{
+    if(cmd.first != "Error")
+    {
+        if(__NewConnections.find(UserId)->second.getIspassword().empty())
+        {
+            if(cmd.first == "password" && cmd.second == __password)
+                __NewConnections.find(UserId)->second.setIspassword(cmd.second);
+            else
+                std::cout << "Error45\n";
+        }
+        else if(__NewConnections.find(UserId)->second.getUsername().empty())
+        {
+            if(cmd.first == "username")
+                 __NewConnections.find(UserId)->second.setUsername(cmd.second);
+            else
+                std::cout << "Error46\n";
+        }
+        else if(__NewConnections.find(UserId)->second.getNickname().empty())
+        {
+            if(cmd.first == "nickname")
+            {
+                 __NewConnections.find(UserId)->second.setNickname(cmd.second);
+                 __NewConnections.find(UserId)->second.setIsLogged(true);
+                 __users[UserId] = __NewConnections.find(UserId)->second;
+            }
+            else
+                std::cout << "Error47\n";
+        }
+    }
+    else
+        std::cout << "Error98\n";
+}
+std::vector<std::pair<std::string, std::string> > Server::ParceConnectionLine(std::string cmd)
+{
+    cmd = trim(cmd);
+    std::vector<std::pair<std::string,std::string> >ret;
+    std::size_t __found  = cmd.find("\n");
+    std::vector<std::string>ConnectionInf(3);
+    ConnectionInf[0] =  cmd.substr(0,__found);
+    cmd = cmd.substr(__found + 1 ,- 1);
+    __found =  cmd.find("\n");
+    ConnectionInf[1] = cmd.substr(0,__found);
+    ConnectionInf[2] = cmd.substr(__found + 1 , -1);
+    for(unsigned int i = 0 ; i < 3;i++)
+    {
+        ConnectionInf[i] = trim( ConnectionInf[i]);
+    }
+    for(int i = 0 ; i < 3;i++)
+    {
+        __found = ConnectionInf[i].find(" ");
+        if(__found == std::string::npos)
+            return(ret);
+        ret.push_back(std::make_pair(trim(ConnectionInf[i].substr(0,__found)),trim(ConnectionInf[i].substr(__found + 1, -1))));
+    }
+    if((ret[0].first != "password" || ret[0].second != __password ) || ret[2].first != "nickname" || ret[1].first != "username")
+    {
+        ret.push_back(std::make_pair("error","error"));
+    }
+    return(ret);
+}
+
+std::pair<std::string,std::string> Server::ParceConnection(std::string cmd)
+{
+    cmd = trim(cmd);
+    std::size_t found = cmd.find(" ");
+    std::pair<std::string,std::string>ret;
+    if(found == std::string::npos)
+    {
+        ret.first = "Error";
+        ret.second = "Error";
+    }
+    else
+    {
+        ret.first = cmd.substr(0,found);
+        ret.second = cmd.substr(found + 1, cmd.size() - found - 2);
+    }
+    ret.first = trim(ret.first);
+    ret .second = trim(ret.second);
+    if(ret.first != "password" && ret.first != "username" && ret.first != "nickname")
+    {
+        ret.first = "Error";
+        ret.second = "Error";
+    }
+    return(ret);
+}
 
 unsigned short Server::getPort() const
 {
-    
     return (this->__port);
 }
 
@@ -185,7 +268,10 @@ bool Server::run( void )
                 struct pollfd __NewClient;
                 __NewClient.fd = new_socket;
                 __NewClient.events = POLLIN;
-                __pollfds.push_back(__NewClient); // add the new client socket to the pollfds vector
+                __pollfds.push_back(__NewClient);
+                Client NewClient = Client();
+                __NewConnections[__NewClient.fd] = NewClient;
+                 // add the new client socket to the pollfds vector
                 
             }
             else // if the event is on a client socket, it means the client sent a message
@@ -210,24 +296,61 @@ bool Server::run( void )
                     std::string tmpBuffer = buffer;
                     if(__users.find(__pollfds[i].fd) != __users.end())
                     {
-                        __users[__pollfds[i].fd].appendBuffer(tmpBuffer);
-                        if (tmpBuffer.find('\n') != std::string::npos)
+                        std::string CurrentBuffer = __users.find(__pollfds[i].fd)->second.getIsbuffer();
+                        CurrentBuffer+=buffer;
+                        __users.find(__pollfds[i].fd)->second.setIsbuffer(CurrentBuffer);
+                        if(CurrentBuffer.find("\n") != std::string::npos)
                         {
-                            if (tmpBuffer[tmpBuffer.find('\n') - 1] == '\r') 
-                                tmpBuffer.erase(tmpBuffer.find('\n') - 1, 1);
-                            __users[__pollfds[i].fd].setCommand(tmpBuffer);
                             parseCommand(__pollfds[i].fd);
-                        }
-                        else {
-                            __users[__pollfds[i].fd].appendBuffer(tmpBuffer);
+                            __users.find(__pollfds[i].fd)->second.setIsbuffer("");
                         }
                     }
                     else
                     {
+                        std::string CurrentBuffer = __NewConnections.find(__pollfds[i].fd)->second.getIsbuffer();
+                        CurrentBuffer+=buffer;
+                        __NewConnections.find(__pollfds[i].fd)->second.setIsbuffer(CurrentBuffer);
+                        CurrentBuffer =   __NewConnections.find(__pollfds[i].fd)->second.getIsbuffer();
+                        if(CurrentBuffer.find("\n") != std::string::npos)
+                        {
+                            int __Backtoline = 0;
+                            for(unsigned int i = 0 ; i < CurrentBuffer.size();i++)
+                            {
+                                if(CurrentBuffer[i] == '\n')
+                                    __Backtoline++;
+                                CurrentBuffer[i] = (char)tolower(CurrentBuffer[i]);
+                            }
+                            if(__Backtoline == 1)
+                                SetUserInf(ParceConnection(CurrentBuffer), __pollfds[i].fd);
+                            else
+                            {
+                                std::vector<std::pair<std::string, std::string> > cmds = ParceConnectionLine(CurrentBuffer);
+                                if(cmds.size() != 3)
+                                    std::cout << "Error110\n";
+                                else
+                                {
+                                    __NewConnections.find(__pollfds[i].fd)->second.setIspassword(cmds[0].second);
+                                    __NewConnections.find(__pollfds[i].fd)->second.setUsername(cmds[1].second);
+                                    __NewConnections.find(__pollfds[i].fd)->second.setUsername(cmds[2].second);
+                                }
+
+                            }
+                            __NewConnections.find(__pollfds[i].fd)->second.setIsbuffer("");
+                        }
                         // this means the client is not authenticated yet
                     }
-                    std::cout << "Client: \t" << buffer << std::endl;
+                    // std::cout << "Client: \t";
+                    // std::cout << buffer << std::endl;
                 }
+                // std::string msg;std::cout << "enter message ";std::getline(std::cin, msg);
+                // // std::cout << msg << std::endl;
+                // valread = send(__pollfds[i].fd, msg.append("\n").c_str(),msg.size(), 0);
+                //  if (valread < 0)
+                // {
+                //     std::cerr << "Error: send failed\n";
+                //     return(false);
+                // }
+                // to be continued...
             }
         }
     }
@@ -256,8 +379,8 @@ void    Server::parseCommand( int fd )
     size_t                      pos = 0;
     std::string                 str;
 
-    // line = getCommand();
-    line = "KICK myChan ayoub anjaimi";
+    line = __users[fd].getIsbuffer();
+    // line = "KICK myChan ayoub anjaimi";
     while ((pos = line.find(' ')) != std::string::npos)
     {
         str = line.substr(0, pos);
@@ -269,8 +392,10 @@ void    Server::parseCommand( int fd )
     for (size_t i = 0; i < command.size(); ++i){
         command[i] = (char)(tolower(command[i]));
     }
-    res.erase(res.begin());
-    if (command == KICK)
+    for(size_t i = 0 ; i < res.size();i++)
+        std::cout << res[i] << std::endl;
+    // (void)fd;  
+        if (command == KICK)
         parseKick(res, fd);
     // else if (command == MODE)
     //     parseMode(res, fd);
@@ -319,6 +444,7 @@ void    Server::parseKick(std::vector<std::string> &vec, int fd)
 {
     size_t i;
 
+    (void)fd;
     if (vec.size() <= 1)
         std::cout << "ERR_NEEDMOREPARAMS(461)\n";
     for (i = 0;i < __channels.size();++i)

@@ -1,14 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: aanjaimi <aanjaimi@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/02/18 01:29:00 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/20 13:01:23 by aanjaimi         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 
 // # include "utils.hpp"
 # include "Server.hpp"
@@ -27,5 +16,4 @@ int main(int ac, char **av)
     server.setPassword(av[2]);//check if password is valid
     server.setPort(av[1]);//check if port is valid
     server.run();
-    // server.parseCommand();
 }

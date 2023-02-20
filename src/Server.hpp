@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: aanjaimi <aanjaimi@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/02/14 22:25:51 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/20 14:22:10 by aanjaimi         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 # pragma once
 
 // # include "utils.hpp"
@@ -58,6 +46,10 @@ class Server{
         void                   disconnect( void );
         int                    authentification( void );
         std::string            getCommand( void );
+        std::pair<std::string,std::string> ParceConnection(std::string cmd);
+        std::vector<std::pair<std::string, std::string> > ParceConnectionLine(std::string cmd);
+        void                    SetUserInf(std::pair<std::string,std::string> cmd, int UserId);
+
         void                   setCommand( std::string );
         void                   parseCommand( int fd );
         void                   parseKick( std::vector<std::string> &, int);

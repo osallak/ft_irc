@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   utils.hpp                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: aanjaimi <aanjaimi@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/02/14 22:44:09 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/20 11:19:01 by aanjaimi         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 # pragma once
 
 # include <algorithm>
@@ -46,5 +34,24 @@
 # define PRIVMSG "privmsg"
 # define JOIN "join"
 
+
+
+/*
+PING
+PONG
+QUIT
+ERROR
+PART
+NAMES
+ LIST
+PRIVMSG
+JOIN
+
+KICK
+MODE
+INVITE
+TOPIC
+
+*/
 // this file is for the common functions, classes, etc. that are used in multiple files
 // for example, the error functions...
