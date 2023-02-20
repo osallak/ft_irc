@@ -1,4 +1,4 @@
-SRC = src/main.cpp src/Server.cpp src/Client.cpp
+SRC = src/main.cpp src/Server.cpp src/Client.cpp src/Channel.cpp
 
 OBJ = $(SRC:.cpp=.o)
 
@@ -13,7 +13,7 @@ all : $(NAME)
 $(NAME) : $(OBJ)
 	$(CC) $^ -o $@
 
-%.o: %.cpp src/Server.hpp src/Client.hpp
+%.o: %.cpp src/Server.hpp src/Client.hpp src/Channel.hpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean :

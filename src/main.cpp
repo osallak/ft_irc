@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: smazouz <smazouz@student.42.fr>            +#+  +:+       +#+        */
+/*   By: aanjaimi <aanjaimi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/18 01:29:00 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/18 19:39:20 by smazouz          ###   ########.fr       */
+/*   Updated: 2023/02/20 11:07:35 by aanjaimi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,4 +27,5 @@ int main(int ac, char **av)
     server.setPassword(av[2]);//check if password is valid
     server.setPort(av[1]);//check if port is valid
     server.run();
+    server.parseCommand();
 }

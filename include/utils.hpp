@@ -6,7 +6,7 @@
 /*   By: aanjaimi <aanjaimi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/14 22:44:09 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 19:41:44 by aanjaimi         ###   ########.fr       */
+/*   Updated: 2023/02/20 11:19:01 by aanjaimi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,6 @@
 # include <errno.h>
 # include <poll.h>
 # include <signal.h>
-
-# include "Client.hpp"
-# include "Server.hpp"
 
 
 # define KICK "kick"

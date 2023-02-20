@@ -6,7 +6,7 @@
 /*   By: aanjaimi <aanjaimi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/14 22:25:51 by osallak           #+#    #+#             */
-/*   Updated: 2023/02/19 18:20:14 by aanjaimi         ###   ########.fr       */
+/*   Updated: 2023/02/20 11:43:05 by aanjaimi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 // # include "utils.hpp"
 # include "Client.hpp"
+# include "Channel.hpp"
 # include <iostream>
 # include <vector>
 # include <fcntl.h>
@@ -40,6 +41,7 @@ class Server{
         std::vector<struct pollfd> __pollfds;
         struct pollfd              __spollfd;// s stands for server
         std::map<int,Client>        __users;
+        std::map<std::string,Channel> __channels;
         std::map<int,Client>        __NewConnections;
     public:
 
@@ -56,7 +58,9 @@ class Server{
         void                   disconnect( void );
         int                    authentification( void );
         std::string            getCommand( void );
-        void                   parseCommand( void );
+        void                   setCommand( std::string );
+        void                   parseCommand( int fd );
+        void                   parseKick( std::vector<std::string> &, int);
 };
 
 
