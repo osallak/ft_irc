@@ -296,8 +296,14 @@ bool Server::run( void )
                     std::string tmpBuffer = buffer;
                     if(__users.find(__pollfds[i].fd) != __users.end())
                     {
-                        std::cout << "we reserve message from client : " << __users.find(__pollfds[i].fd)->second.getUsername() << ":---->" << buffer << std::endl;
-
+                        std::string CurrentBuffer = __users.find(__pollfds[i].fd)->second.getIsbuffer();
+                        CurrentBuffer+=buffer;
+                        __users.find(__pollfds[i].fd)->second.setIsbuffer(CurrentBuffer);
+                        if(CurrentBuffer.find("\n") != std::string::npos)
+                        {
+                            parseCommand(__pollfds[i].fd);
+                            __users.find(__pollfds[i].fd)->second.setIsbuffer("");
+                        }
                     }
                     else
                     {
@@ -373,7 +379,7 @@ void    Server::parseCommand( int fd )
     size_t                      pos = 0;
     std::string                 str;
 
-    line = getCommand();
+    line = __users[fd].getIsbuffer();
     // line = "KICK myChan ayoub anjaimi";
     while ((pos = line.find(' ')) != std::string::npos)
     {
@@ -386,49 +392,50 @@ void    Server::parseCommand( int fd )
     for (size_t i = 0; i < command.size(); ++i){
         command[i] = (char)(tolower(command[i]));
     }
-    res.erase(res.begin());
-    if (command == KICK)
+    for(size_t i = 0 ; i < res.size();i++)
+        std::cout << res[i] << std::endl;
+    // (void)fd;
+        if (command == KICK)
         parseKick(res, fd);
-    else if (command == MODE)
-        parseMode(res, fd);
-    else if (command == INVITE)
-        parseInvite(res, fd);
-    else if (command == TOPIC)
-        parseTopic(res, fd);
-    else if (command == PING)
-        parsePing(res, fd);
-    else if (command == PONG)
-        parsePong(res, fd);
-    else if (command == QUIT)
-        parseQuit(res, fd);
-    else if (command == ERROR)
-        parseError(res, fd);
-    else if (command == PART)
-        parsePart(res, fd);
-    else if (command == NAMES)
-        parseNames(res, fd);
-    else if (command == LIST)
-        parseList(res, fd);
-    else if (command == PRIVMSG)
-        parsePrivmsg(res, fd);
-    else if (command == JOIN)
-        parseJoin(res, fd);
-        
-        
+    // else if (command == MODE)
+    //     parseMode(res, fd);
+    // else if (command == INVITE)
+    //     parseInvite(res, fd);
+    // else if (command == TOPIC)
+    //     parseTopic(res, fd);
+    // else if (command == PING)
+    //     parsePing(res, fd);
+    // else if (command == PONG)
+    //     parsePong(res, fd);
+    // else if (command == QUIT)
+    //     parseQuit(res, fd);
+    // else if (command == ERROR)
+    //     parseError(res, fd);
+    // else if (command == PART)
+    //     parsePart(res, fd);
+    // else if (command == NAMES)
+    //     parseNames(res, fd);
+    // else if (command == LIST)
+    //     parseList(res, fd);
+    // else if (command == PRIVMSG)
+    //     parsePrivmsg(res, fd);
+    // else if (command == JOIN)
+    //     parseJoin(res, fd);
 }
 
 void    Server::parseKick(std::vector<std::string> &vec, int fd)
 {
     size_t i;
 
+    (void)fd;
     if (vec.size() <= 1)
         std::cout << "ERR_NEEDMOREPARAMS(461)\n";
     for (i = 0;i < __channels.size();++i)
     {
-        if (__channels[i].getChannelName() == vec[0])
+        if (__channels[vec[0]].getChannelName() == vec[0])
             break ;
     }
     if (i == __channels.size())
         std::cout << "ERR_NOSUCHCHANNEL(403\n)";
-    if (__users[fd]. == '')
+    // if (__users[fd]. == '')
 }

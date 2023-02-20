@@ -5,7 +5,7 @@ Channel::Channel() : __channelName(""), __channelTopic(""), __channelClients(), 
 
 }
 
-Channel::Channel(std::string channelName, Client channelModerator, int channelType) : __channelName(channelName), __channelTopic(""), __channelClients(), __channelModerator(channelModerator), __channelType(channelType)
+Channel::Channel(std::string channelName, int channelModerator, int channelType) : __channelName(channelName), __channelTopic(""), __channelClients(), __channelModerator(channelModerator), __channelType(channelType)
 {
 
 }
@@ -48,7 +48,7 @@ std::map<int, Client> Channel::getChannelClients() const
     return (__channelClients);
 }
 
-Client Channel::getChannelModerator() const
+int Channel::getChannelModerator() const
 {
     return (__channelModerator);
 }
@@ -73,7 +73,7 @@ void Channel::setChannelClients(const std::map<int, Client>& channelClients)
     __channelClients = channelClients;
 }
 
-void Channel::setChannelModerator(const Client& channelModerator)
+void Channel::setChannelModerator(const int& channelModerator)
 {
     __channelModerator = channelModerator;
 }
