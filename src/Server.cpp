@@ -717,4 +717,3 @@ bool    Server::isInChannel(Channel &channel, int fd) const
     return (false);
 }
 
-
