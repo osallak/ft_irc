@@ -23,21 +23,29 @@ class Channel{
 
         std::string           getChannelName() const;
         std::string           getChannelTopic() const;
-        std::map<int, Client> getChannelClients() const;
         std::map<int, Client> getChannelInvited() const;
         std::vector<int>      getChannelModerator() const;
         int                   getChannelType() const;
         int                   getChannelPass() const;
         std::string           getChannelPassword() const;
+        bool                  getInvited(int UserID);
+        size_t                getClientNb();
+        int                   getChannelClient(std::string __UserName) const;
+        std::map<int, Client>::const_iterator BigenIterator() const;
+        std::map<int, Client>::const_iterator EndIterator() const;
 
+        
+
+        void SetInviteds(int __UserID, Client User);
         void setChannelName(const std::string& channelName);
         void setChannelTopic(const std::string& channelTopic);
-        void setChannelClients(const std::map<int, Client>& channelClients);
         void setChannelInvited(const std::map<int, Client>& channelInvited);
         void setChannelModerator(const std::vector<int>& channelModerator);
         void setChannelType(const int& channelType);
         void setChannelPass(const int& channelPass);
         void setChannelPassword(const std::string& channelPassword);
+        void setChannelClients(int __UserId , std::string __UserName);
+
 
 };
 
