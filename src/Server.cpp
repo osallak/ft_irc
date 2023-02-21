@@ -157,6 +157,123 @@ void Server::setPort(std::string port)
     }
     this->__port = atoi(port.c_str());
 }
+int    Server::GetUserId(std::string UserName)
+{
+    std::map<int, Client>::iterator it;
+    for (it = __users.begin(); it != __users.end(); ++it) {
+        if(it->second.getUsername() == UserName)
+            return(it->first);
+    }
+
+    return -1;
+}
+void    Server::__ListChannelsUserInvTo(int UserId)
+{
+
+    if(send(UserId,"channels can you access\n",25,0) == -1)
+    {
+        std::cout << "send() Failed\n";
+                exit(0);
+    }
+    std::map<std::string, Channel>::iterator it;
+    for (it = __channels.begin(); it != __channels.end(); ++it) {
+        if(it->second.getInvited(UserId))
+        {
+            if (send(UserId,it->second.getChannelName().c_str(),it->second.getChannelName().size(), 0) == - 1)
+            {
+                std::cout << "send() Failed\n";
+                exit(0);
+            }
+        }
+    }
+}
+
+void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
+{
+    int __ValRead = 0;
+    if(!__arg.size())
+    {
+        __ListChannelsUserInvTo(__UserId);
+        return;
+    }
+    int __ReceiverId = GetUserId(__arg[0]);
+    if(__arg.size() == 1)
+        __ValRead = send(__UserId,"341\n",5, 0);
+    else if(__ReceiverId == -1)
+        __ValRead = send(__UserId,"403\n",5, 0);
+    else if(__channels.find(__arg[1]) == __channels.end())
+        __ValRead = send(__UserId,"403",4, 0);
+    else if(!__channels[__arg[1]].getClientNb())
+        __ValRead = send(__UserId,"482\n",5, 0);
+    else if(!__channels[__arg[1]].getInvited(__UserId))
+        __ValRead = send(__UserId,"442\n",5, 0);
+    else
+    {
+        __ValRead = send(__UserId,"341\n",5, 0);
+        __channels[__arg[1]].SetInviteds(__ReceiverId, __users[__UserId]);
+        // __channels[__arg[1]].setChannelClients(__ReceiverId , __arg[0]);
+    }
+    if(__ValRead == - 1)
+        std::cout << "send() failde\n";
+
+}
+
+void Server::parseTopic(std::vector<std::string>__arg,int __UserId)
+{
+    int __ValRead = 0;
+    if(!__arg.size())
+        std::cout << "NO arg\n";
+    else if(__arg.size() == 1)
+        __ValRead  = send(__UserId,"331\n",5, 0);
+    else if(__channels.find(__arg[1]) == __channels.end())
+        __ValRead = send(__UserId,"403",4, 0);
+    else if(__channels.find(__arg[1])->second.getChannelType() && __channels.find(__arg[1])->second.getChannelModerator() != __UserId)
+        __ValRead = send(__UserId,"482",4, 0);
+    else
+    {
+        std::map<int, Client>::const_iterator BeginIt;
+        std::map<int, Client>::const_iterator EndIt;
+        BeginIt = __channels.find(__arg[1])->second.BigenIterator();
+        EndIt = __channels.find(__arg[1])->second.EndIterator();
+        while(BeginIt != EndIt)
+        {
+            size_t len = __channels.find(__arg[1])->second.getChannelTopic().size();
+             __channels.find(__arg[1])->second.setChannelTopic(__arg[2]);
+            __ValRead = send(BeginIt->first,__channels.find(__arg[1])->second.getChannelTopic().c_str(),len, 0);
+            __ValRead = send(BeginIt->first,"\n",1, 0);
+            BeginIt++;
+        }
+    }
+    if(__ValRead == - 1)
+        std::cout << "send() failde\n";
+}
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+        
+    // valread = send(__pollfds[i].fd, msg.append("\n").c_str(),msg.size(), 0);
+    //  if (valread < 0)
+    // {
+    //     std::cerr << "Error: send failed\n";
+    //     return(false);
+    // }
+// }
 
 std::string Server::getPassword() const
 {
@@ -386,23 +503,28 @@ void    Server::parseCommand( int fd )
         str = line.substr(0, pos);
         res.push_back(str);
         line.erase(0, pos + 1);
+
     }
+    line = line.substr(0,line.size() - 1);
     res.push_back(line);
     command = res[0];
     for (size_t i = 0; i < command.size(); ++i){
         command[i] = (char)(tolower(command[i]));
     }
+    res.erase(res.begin());
     for(size_t i = 0 ; i < res.size();i++)
         std::cout << res[i] << std::endl;
-    // (void)fd;  
-        if (command == KICK)
+    // (void)fd;
+    std::cout << "Cmd ------>" << command  << "|"<< std::endl;
+    std::cout << res.size() << std::endl;
+    if (command == KICK)
         parseKick(res, fd);
+    else if (command == "invite")
+        parseInvite(res, fd);
     // else if (command == MODE)
     //     parseMode(res, fd);
-    // else if (command == INVITE)
-    //     parseInvite(res, fd);
-    // else if (command == TOPIC)
-    //     parseTopic(res, fd);
+    else if (command == TOPIC)
+        parseTopic(res, fd);
     // else if (command == PING)
     //     parsePing(res, fd);
     // else if (command == PONG)
@@ -416,7 +538,7 @@ void    Server::parseCommand( int fd )
     // else if (command == NAMES)
     //     parseNames(res, fd);
     // else if (command == LIST)
-    //     parseList(res, fd);
+    //     parseList(res, fd);q
     // else if (command == PRIVMSG)
     //     parsePrivmsg(res, fd);
     // else if (command == JOIN)
@@ -426,7 +548,7 @@ void    Server::parseCommand( int fd )
 void    Server::parseKick(std::vector<std::string> &vec, int fd)
 {
     size_t i;
-
+    std::cout << "hello\n";
     (void)fd;
     if (vec.size() <= 1)
         std::cout << "ERR_NEEDMOREPARAMS(461)\n";

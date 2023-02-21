@@ -7,8 +7,8 @@ class Channel{
     private:
         std::string           __channelName;
         std::string           __channelTopic;
-        std::map<int, std::string> __channelClients;
-        std::set<int>         __Invited;
+        std::map<int, Client> __channelClients;
+        std::map<int, Client>        __channelInvited;
         int                   __channelModerator;
         int                   __channelType;//0 = public, 1 = private
         std::string           __channelPassword;
@@ -25,7 +25,14 @@ class Channel{
         int                   getChannelClients(std::string __UserName) const;
         int                   getChannelModerator() const;
         int                   getChannelType() const;
+        bool                  getInvited(int UserID);
+        size_t                getClientNb();
+        std::map<int, Client>::const_iterator BigenIterator() const;
+        std::map<int, Client>::const_iterator EndIterator() const;
 
+        
+
+        void SetInviteds(int __UserID, Client User);
         void setChannelName(const std::string& channelName);
         void setChannelTopic(const std::string& channelTopic);
         void setChannelClients(int __userId , std::string __UserName);
