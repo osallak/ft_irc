@@ -43,12 +43,22 @@ std::string Channel::getChannelTopic() const
     return (__channelTopic);
 }
 
+std::string Channel::getChannelPassword() const
+{
+    return (__channelPassword);
+}
+
 std::map<int, Client> Channel::getChannelClients() const
 {
     return (__channelClients);
 }
 
-int Channel::getChannelModerator() const
+std::map<int, Client> Channel::getChannelInvited() const
+{
+    return (__channelInvited);
+}
+
+std::vector<int> Channel::getChannelModerator() const
 {
     return (__channelModerator);
 }
@@ -56,6 +66,11 @@ int Channel::getChannelModerator() const
 int Channel::getChannelType() const
 {
     return (__channelType);
+}
+
+int Channel::getChannelPass() const
+{
+    return (__channelPass);
 }
 
 void Channel::setChannelName(const std::string& channelName)
@@ -68,12 +83,22 @@ void Channel::setChannelTopic(const std::string& channelTopic)
     __channelTopic = channelTopic;
 }
 
+void Channel::setChannelPassword(const std::string& channelPassword)
+{
+    __channelPassword = channelPassword;
+}
+
 void Channel::setChannelClients(const std::map<int, Client>& channelClients)
 {
     __channelClients = channelClients;
 }
 
-void Channel::setChannelModerator(const int& channelModerator)
+void Channel::setChannelInvited(const std::map<int, Client>& channelInvited)
+{
+    __channelInvited = channelInvited;
+}
+
+void Channel::setChannelModerator(const std::vector<int>& channelModerator)
 {
     __channelModerator = channelModerator;
 }
@@ -81,6 +106,11 @@ void Channel::setChannelModerator(const int& channelModerator)
 void Channel::setChannelType(const int& channelType)
 {
     __channelType = channelType;
+}
+
+void Channel::setChannelPass(const int& channelPass)
+{
+    __channelPass = channelPass;
 }
 
 // Path: src/Channel.cpp
