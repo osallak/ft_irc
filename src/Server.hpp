@@ -50,9 +50,12 @@ class Server{
         std::vector<std::pair<std::string, std::string> > ParceConnectionLine(std::string cmd);
         void                    SetUserInf(std::pair<std::string,std::string> cmd, int UserId);
 
-        void                   setCommand( std::string );
-        void                   parseCommand( int fd );
-        void                   parseKick( std::vector<std::string> &, int);
+        void                         setCommand( std::string );
+        void                        parseCommand( int fd );
+        std::vector<std::string>    split(std::string &, char);
+        // void                        parseKick( std::vector<std::string> &, int);
+        void                        parseJoin( std::vector<std::string> &, int);
+        void                        parseMode( std::vector<std::string> &, int);
 };
 
 

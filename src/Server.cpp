@@ -380,7 +380,6 @@ void    Server::parseCommand( int fd )
     std::string                 str;
 
     line = __users[fd].getIsbuffer();
-    // line = "KICK myChan ayoub anjaimi";
     while ((pos = line.find(' ')) != std::string::npos)
     {
         str = line.substr(0, pos);
@@ -395,10 +394,10 @@ void    Server::parseCommand( int fd )
     for(size_t i = 0 ; i < res.size();i++)
         std::cout << res[i] << std::endl;
     // (void)fd;  
-        if (command == KICK)
-        parseKick(res, fd);
-    // else if (command == MODE)
-    //     parseMode(res, fd);
+    if (command == MODE)
+        parseMode(res, fd);
+    // else if (command == KICK)
+    //     parseKick(res, fd);
     // else if (command == INVITE)
     //     parseInvite(res, fd);
     // else if (command == TOPIC)
@@ -419,23 +418,135 @@ void    Server::parseCommand( int fd )
     //     parseList(res, fd);
     // else if (command == PRIVMSG)
     //     parsePrivmsg(res, fd);
-    // else if (command == JOIN)
-    //     parseJoin(res, fd);
+    else if (command == JOIN)
+        parseJoin(res, fd);
 }
 
-void    Server::parseKick(std::vector<std::string> &vec, int fd)
+std::vector<std::string>    Server::split(std::string &line, char c)
 {
-    size_t i;
+    std::vector<std::string>    vec;
+    size_t                      pos = 0;
+    std::string                 str;
 
-    (void)fd;
-    if (vec.size() <= 1)
-        std::cout << "ERR_NEEDMOREPARAMS(461)\n";
-    for (i = 0;i < __channels.size();++i)
+    while ((pos = line.find(c)) != std::string::npos)
     {
-        if (__channels[vec[0]].getChannelName() == vec[0])
-            break ;
+        str = line.substr(0, pos);
+        vec.push_back(str);
+        line.erase(0, pos + 1);
     }
-    if (i == __channels.size())
-        std::cout << "ERR_NOSUCHCHANNEL(403\n)";
-    // if (__users[fd]. == '')
+    vec.push_back(line);
+    return (vec);
 }
+
+void    Server::parseJoin(std::vector<std::string> &vec, int fd)
+{
+    std::vector<std::string>                    chn;
+    std::vector<std::string>                    key;
+    std::map<std::string,Channel>::iterator     it;
+    std::map<int,Client>::iterator              inv;
+    std::string                                 str;
+    size_t                                      i;
+    // size_t                                      j;
+    size_t                                      k;
+
+    k = 0;
+    if (vec.size() == 0)
+    {
+        std::cout << "ERR_NEEDMOREPARAMS(461)\n";
+        return ;
+    }
+    chn = split(vec[0], ',');
+    key = split(vec[1], ',');
+    //check if channels exist
+    for (i = 0;i < chn.size(); ++i)
+    {
+        it = __channels.find(chn[i]);
+        if (it == __channels.end())
+        {
+            __channels[chn[i]] = Channel(chn[i], fd, 0);
+            std::cout << "Channel creted succesfully\n";
+            return ;
+        }
+        //check if it's private
+        if (it->second.getChannelType() == 1)
+        {
+            inv = it->second.getChannelInvited().find(fd);
+            if (inv == it->second.getChannelInvited().end())
+            {
+                std::cout << "ERR_INVITEONLYCHAN(473)\n";
+                return ;
+            }
+            if (it->second.getChannelPass() == 1)
+            {
+                if (it->second.getChannelPassword() != key[k++])
+                {
+                    std::cout << "ERR_BADCHANNELKEY(475)\n";
+                    return ;
+                }
+                else
+                {
+                    std::cout << "Joined\n";
+                    return ;
+                }
+            }
+        }
+        else
+        {
+            if (it->second.getChannelPass() == 1)
+            {
+                if (it->second.getChannelPassword() != key[k++])
+                {
+                    std::cout << "ERR_BADCHANNELKEY(475)\n";
+                    return ;
+                }
+                else
+                {
+                    std::cout << "Joined\n";
+                    return ;
+                }
+            }
+        }
+    }
+}
+
+void    Server::parseMode(std::vector<std::string> &vec, int fd)
+{
+    std::map<int,Client>::iterator  it;
+    // size_t                          i;
+
+    if (vec.size() == 0)
+    {
+        std::cout << "ERR_NEEDMOREPARAMS(461)\n";
+        return ;
+    }
+    (void)fd;
+    // it = __users.find()
+    // for (i = 0;i < __channels.size();++i)
+    // {
+    //     if (__channels[vec[0]].getChannelName() == vec[0])
+    //         break ;
+    // }
+    // if (i == __channels.size())
+    //     std::cout << "ERR_NOSUCHCHANNEL(403)\n";
+    // it = std::find(__channels[vec[0]].getChannelModerator().begin(), __channels[vec[0]].getChannelModerator().end(), fd);
+    // if (it == __channels[vec[0]].getChannelModerator().end())
+    //     std::cout << "ERR_CHANOPRIVSNEEDED(482)\n";
+}
+
+// void    Server::parseKick(std::vector<std::string> &vec, int fd)
+// {
+//     size_t i;
+
+//     (void)fd;
+//     if (vec.size() <= 1)
+//         std::cout << "ERR_NEEDMOREPARAMS(461)\n";
+//     for (i = 0;i < __channels.size();++i)
+//     {
+//         if (__channels[vec[0]].getChannelName() == vec[0])
+//             break ;
+//     }
+//     if (i == __channels.size())
+//         std::cout << "ERR_NOSUCHCHANNEL(403)\n";
+//     if (__channels[vec[0]].getChannelModerator() != fd)
+//         std::cout << "ERR_CHANOPRIVSNEEDED(482)\n";
+// }
