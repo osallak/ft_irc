@@ -57,10 +57,13 @@ class Server{
         void                   setCommand( std::string );
         void                   parseCommand( int fd );
         void                   parseKick( std::vector<std::string> &, int);
+        void                   parsePrivmsg( std::vector<std::string> &, int);
         void                   parseInvite(std::vector<std::string>__argm,int __UserId);
         int                   GetUserId(std::string UserName);
+        bool                    isInChannel(Channel &channel, int fd) const;
         void                   __ListChannelsUserInvTo(int UserId);
         void                    parseTopic(std::vector<std::string>__arg,int __UserId);
+        void                    parsePart(std::vector<std::string>__arg,int __UserId);
 
 };
 

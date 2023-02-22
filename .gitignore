@@ -1,4 +1,12 @@
+<<<<<<< HEAD
+.vscode/*
+a.out*
+*.o
+*.out
+TODO
+=======
 .vscode/
 a.out*
 *.o
 *.out
+>>>>>>> 6435dcaf4840a52b8ff00a55dd4e7b37a0658669
