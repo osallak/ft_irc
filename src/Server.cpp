@@ -573,17 +573,15 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
     size_t                                      k;
 
     k = 0;
+    std::cout << "hello\n";
     if (vec.size() == 0)
     {
-    // size_t i;
-    std::cout << "hello\n";
-    (void)fd;
-    if (vec.size() <= 1)
         std::cout << "ERR_NEEDMOREPARAMS(461)\n";
         return ;
     }
     chn = split(vec[0], ',');
-    key = split(vec[1], ',');
+    if (vec.size() == 2)
+        key = split(vec[1], ',');
     //check if channels exist
     for (i = 0;i < chn.size(); ++i)
     {
@@ -626,7 +624,8 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                 }
                 else
                 {
-                    std::cout << "Joined\n";
+                    __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+                    std::cout << "Joined1\n";
                     return ;
                 }
             }
@@ -642,11 +641,21 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                 }
                 else
                 {
-                    std::cout << "Joined\n";
+                    __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+                    std::cout << "Joined2\n";
                     return ;
                 }
-            } else  {
-                std::cout << "Joined\n";
+            }
+            else  
+            {
+                std::cout << it->second.getChannelClientt(fd) << "\n";
+                if (it->second.getChannelClientt(fd) == 1)
+                {
+                    std::cout << "User already exist in this channel\n";
+                    return ;
+                }
+                __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+                std::cout << "Joined3\n";
                 return ;
             }
         }
@@ -763,10 +772,11 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                         if (i != -1)
                         {
                             v_cl = it->second.getChannelModerator();
-                            if (std::find(v_cl.begin(), v_cl.end(), i) != v_cl.end())
+                            std::vector<int>::const_iterator it = std::find(v_cl.begin(), v_cl.end(), fd);
+                            if (it != v_cl.end())
                             {
-                                v_cl.erase(v_cl.begin() + i);
-                                std::cout << "User with fd " << i << " is no longer a moderator now\n";
+                                v_cl.erase(it);
+                                std::cout << "User with fd " << fd << " is no longer a moderator now\n";
                                 return ;
                             }
                             else
