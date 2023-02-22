@@ -62,6 +62,8 @@ class Server{
         bool                    isInChannel(Channel &channel, int fd) const;
         void                   __ListChannelsUserInvTo(int UserId);
         void                    parseTopic(std::vector<std::string>__arg,int __UserId);
+        void                    parsePart(std::vector<std::string>__arg,int __UserId);
+
 };
 
 

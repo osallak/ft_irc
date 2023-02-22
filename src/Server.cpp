@@ -69,7 +69,6 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
             
             if(cmd.first == "nick")
             {
-                std::cout << cmd.second << std::endl;
                 if(__users.find(GetUserId(cmd.second)) != __users.end())
                     std::cout << " ERR_NICKNAMEINUSE (433)  \n";
                 else
@@ -165,7 +164,6 @@ int    Server::GetUserId(std::string UserName)
 {
     std::map<int, Client>::iterator it;
     for (it = __users.begin(); it != __users.end(); ++it) {
-        std::cout << "<<<" << it->second.getUsername() << ">>>\n" << std::endl;
         if(it->second.getUsername() == UserName)
             return(it->first);
     }
@@ -173,7 +171,7 @@ int    Server::GetUserId(std::string UserName)
 }
 void    Server::__ListChannelsUserInvTo(int UserId)
 {
-
+    int __ValRead = 0;
     if(send(UserId,"channels can you access\n",25,0) == -1)
     {
         std::cout << "send() Failed\n";
@@ -183,7 +181,10 @@ void    Server::__ListChannelsUserInvTo(int UserId)
     for (it = __channels.begin(); it != __channels.end(); ++it) {
         if(it->second.getInvited(UserId))
         {
-            if (send(UserId,it->second.getChannelName().c_str(),it->second.getChannelName().size(), 0) == - 1)
+
+            __ValRead = send(UserId,it->second.getChannelName().c_str(),it->second.getChannelName().size(),0);
+            __ValRead = send(UserId,"\n",1,0);
+            if(__ValRead == -1)
             {
                 std::cout << "send() Failed\n";
                 exit(0);
@@ -191,31 +192,53 @@ void    Server::__ListChannelsUserInvTo(int UserId)
         }
     }
 }
-
+void Server::parsePart(std::vector<std::string>__arg,int __UserId)
+{
+    int __ValRead = 0;
+    if(!__arg.size())
+        __ValRead = send(__UserId,"ERR_NEEDMOREPARAMS (461)\n",26, 0);
+    std::vector<std::string>channels = split(__arg[0],',');
+    for(size_t i = 0; i < channels.size();i++)
+    {
+        if(__channels.find(channels[i]) == __channels.end())
+            __ValRead = send(__UserId,"ERR_NOSUCHCHANNEL (403)\n",25, 0);
+        else if(__channels.find(channels[i])->second.getChannelClients().find(__UserId) ==
+             __channels.find(channels[i])->second.getChannelClients().end())
+        {
+            __ValRead = send(__UserId,"ERR_NOTONCHANNEL (442)\n",26, 0);
+        }
+        else
+        {
+            // __channels.[channels[i]].erase(__channels.find(channels[i])->second.getChannelClients().find(__UserId));
+        }
+        if(__ValRead == -1)
+            std::cout << "send() failde\n";
+        __ValRead = 0;
+    }
+}
 void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
     if(!__arg.size())
-    {   
-        std::cout << "hi\n";
+    {
         __ListChannelsUserInvTo(__UserId);
         return;
     }
-    std::cout << "|" << __arg[0] << "|" << std::endl;
-    std::cout << "|" << __arg[1] << "|" << std::endl;
     int __ReceiverId = GetUserId(__arg[0]);
-    std::cout << __ReceiverId << std::endl;
+      std::vector<int> vec = __channels.find(__arg[1])->second.getChannelModerator();
     if(__arg.size() == 1)
-        __ValRead = send(__UserId,"341\n",5, 0);
+        __ValRead = send(__UserId,"ERR_NOSUCHCHANNEL  (482)\n",26, 0);
     else if(__ReceiverId == -1)
-        __ValRead = send(__UserId,"403\n",5, 0);
+        __ValRead = send(__UserId,"ERR_NOSUCHNICK (401)\n",22, 0);
     else if(!__channels[__arg[1]].getClientNb())
-        __ValRead = send(__UserId,"482\n",5, 0);
-    else if(!__channels[__arg[1]].getInvited(__UserId))
-        __ValRead = send(__UserId,"442\n",5, 0);
+        __ValRead = send(__UserId,"ERR_NOSUCHCHANNEL  (482)\n",26, 0);
+    else if(__channels[__arg[1]].getChannelClient(__users[__UserId].getUsername()) == -1)
+        __ValRead = send(__UserId,"ERR_NOSUCHCHANNEL  (482)\n",26, 0);
+    else if(__channels.find(__arg[1])->second.getChannelType() && std::find(vec.begin(),vec.end(),__UserId) != vec.end())
+        __ValRead = send(__UserId,"ERR_CHANOPRIVSNEEDED (482)\n",28, 0);
     else
     {
-        __ValRead = send(__UserId,"341\n",5, 0);
+        __ValRead = send(__UserId,"RPL_INVITING (341)\n",20, 0);
         __channels[__arg[1]].SetInviteds(__ReceiverId, __users[__UserId]);
     }
     if(__ValRead == - 1)
@@ -226,26 +249,29 @@ void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
 void Server::parseTopic(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
-    std::vector<int> vec = __channels.find(__arg[1])->second.getChannelModerator();
-    if(!__arg.size())
-        std::cout << "NO arg\n";
-    else if(__arg.size() == 1)
-        __ValRead  = send(__UserId,"331\n",5, 0);
-    else if(__channels.find(__arg[1]) == __channels.end())
-        __ValRead = send(__UserId,"403",4, 0);
-    else if(__channels.find(__arg[1])->second.getChannelType() && std::find(vec.begin(),vec.end(),__UserId) != vec.end())
-        __ValRead = send(__UserId,"482",4, 0);
+    std::cout << "im here\n";
+    if(!__arg.size() || __arg.size() == 1)
+    {
+            __ValRead = send(__UserId,"RPL_NOTOPIC (331)\n",19, 0);
+            return;
+    }
+    std::vector<int> vec = __channels.find(__arg[0])->second.getChannelModerator();
+    if(__channels.find(__arg[0]) == __channels.end())
+        __ValRead = send(__UserId,"ERR_NOSUCHCHANNEL (403)\n",25, 0);
+    else if(__channels.find(__arg[0])->second.getChannelType() && std::find(vec.begin(),vec.end(),__UserId) != vec.end())
+        __ValRead = send(__UserId,"ERR_CHANOPRIVSNEEDED (482)\n",28, 0);
+
     else
     {
         std::map<int, Client>::const_iterator BeginIt;
         std::map<int, Client>::const_iterator EndIt;
-        BeginIt = __channels.find(__arg[1])->second.BigenIterator();
-        EndIt = __channels.find(__arg[1])->second.EndIterator();
+        BeginIt = __channels.find(__arg[0])->second.BigenIterator();
+        EndIt = __channels.find(__arg[0])->second.EndIterator();
         while(BeginIt != EndIt)
         {
-            size_t len = __channels.find(__arg[1])->second.getChannelTopic().size();
-             __channels.find(__arg[1])->second.setChannelTopic(__arg[2]);
-            __ValRead = send(BeginIt->first,__channels.find(__arg[1])->second.getChannelTopic().c_str(),len, 0);
+             __channels.find(__arg[0])->second.setChannelTopic(__arg[1]);
+            size_t len = __channels.find(__arg[0])->second.getChannelTopic().size();
+            __ValRead = send(BeginIt->first,__channels.find(__arg[0])->second.getChannelTopic().c_str(),len, 0);
             __ValRead = send(BeginIt->first,"\n",1, 0);
             BeginIt++;
         }
@@ -422,7 +448,7 @@ bool Server::run( void )
                             {
                                 std::vector<std::pair<std::string, std::string> > cmds = ParceConnectionLine(CurrentBuffer);
                                 if(cmds.size() != 3)
-                                    std::cout << "correct Form : Pass <password> \n nick <nickname> \n user <username>\n";
+                                    std::cout << "correct Form : Pass <password> \\n nick <nickname> \\n user <username>\n";
                                 else
                                 {
                                     __NewConnections.find(__pollfds[i].fd)->second.setPassword(cmds[0].second);
@@ -497,7 +523,6 @@ void    Server::parseCommand( int fd )
     // else if (command == MODE)
         // parseMode(res, fd);
     res.erase(res.begin());
-    std::cout << command << "|" << std::endl;
     if (command == INVITE)
         parseInvite(res, fd);
     if (command == TOPIC)
@@ -510,8 +535,8 @@ void    Server::parseCommand( int fd )
     //     parseQuit(res, fd);
     // else if (command == ERROR)
     //     parseError(res, fd);
-    // else if (command == PART)
-    //     parsePart(res, fd);
+    else if (command == PART)
+        parsePart(res, fd);
     // else if (command == NAMES)
     //     parseNames(res, fd);
     // else if (command == LIST)

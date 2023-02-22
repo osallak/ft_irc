@@ -41,11 +41,12 @@ class Channel{
         void setChannelName(const std::string& channelName);
         void setChannelTopic(const std::string& channelTopic);
         void setChannelInvited(const std::map<int, Client>& channelInvited);
-        void setChannelModerator(const std::vector<int>& channelModerator);
+        // void setChannelModerator(const std::vector<int>& channelModerator);
         void setChannelType(const int& channelType);
         void setChannelPass(const int& channelPass);
         void setChannelPassword(const std::string& channelPassword);
         void setChannelClients(int __UserId , std::string __UserName);
+        void setChannelModerator(int& channelModerator);
 
 
 };

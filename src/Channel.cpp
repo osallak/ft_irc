@@ -100,10 +100,10 @@ void Channel::setChannelInvited(const std::map<int, Client>& channelInvited)
     __channelInvited = channelInvited;
 }
 
-void Channel::setChannelModerator(const std::vector<int>& channelModerator)
-{
-    __channelModerator = channelModerator;
-}
+// void Channel::setChannelModerator(const std::vector<int>& channelModerator)
+// {
+//     __channelModerator = channelModerator;
+// }
 
 void Channel::setChannelType(const int& channelType)
 {
@@ -155,6 +155,10 @@ std::map<int, Client>::const_iterator Channel::EndIterator() const
 const std::map<int, Client>& Channel::getChannelClients() const
 {
     return __channelClients;
+}
+void Channel::setChannelModerator(int& channelModerator)
+{
+    __channelModerator.push_back(channelModerator);
 }
 
 // Path: src/Channel.cpp
