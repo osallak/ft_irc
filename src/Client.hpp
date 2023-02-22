@@ -28,7 +28,7 @@ class Client {
         void            setNickname(std::string nickname);
         std::string     getUsername() const;
         void            setUsername(std::string username);
-        // struct pollfd   getPollfd() const;
+        int             getFd() const;
         void            setPollfd(struct pollfd pollfd);
         bool            getIsLogged() const;
         void            setIsLogged(bool isLogged);

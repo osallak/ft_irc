@@ -32,6 +32,10 @@ void Client::setNickname(std::string nickname) {
     __nickname = nickname;
 }
 
+int Client::getFd() const {
+    return (__pollfd.fd);
+}
+
 std::string Client::getUsername() const {
     return __username;
 }

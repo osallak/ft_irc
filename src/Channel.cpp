@@ -59,7 +59,7 @@ std::map<int, Client> Channel::getChannelInvited() const
     return (__channelInvited);
 }
 
-std::vector<int> Channel::getChannelModerator() const
+std::vector<int>& Channel::getChannelModerator()
 {
     return (__channelModerator);
 }
@@ -100,9 +100,9 @@ void Channel::setChannelInvited(const std::map<int, Client>& channelInvited)
     __channelInvited = channelInvited;
 }
 
-void Channel::setChannelModerator(const std::vector<int>& channelModerator)
+void Channel::setChannelModerator(int& channelModerator)
 {
-    __channelModerator = channelModerator;
+    __channelModerator.push_back(channelModerator);
 }
 
 void Channel::setChannelType(const int& channelType)
@@ -118,6 +118,16 @@ int Channel::getChannelClient(std::string __UserName) const
     }
     return(-1);
 }
+
+int Channel::getChannelClientt(int fd) const
+{
+    std::map<int, Client>::const_iterator it;
+    it = __channelClients.find(fd);
+    if (it != __channelClients.end())
+        return(1);
+    return(-1);
+}
+
 void Channel::setChannelClients(int __UserId , std::string __UserName)
 {
     __channelClients[__UserId].setUsername(__UserName);

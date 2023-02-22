@@ -1,507 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # include "Server.hpp"
 #include <utility>
 #include <cstdlib>//for atoi and stuff...
@@ -850,7 +346,7 @@ bool Server::run( void )
     // __spollfd.revents = 0;
     __pollfds.push_back(__spollfd);// add the server socket to the pollfds vector, to keep track of it
     
-    int timeout = (1000 * 60); // 1 minute
+    // int timeout = (1000 * 60 ); // 1 minute
     // infinite loop to keep the server running
 
     while (true)
@@ -859,7 +355,7 @@ bool Server::run( void )
         //pollfd is a struct that contains the file descriptor, the events to check for, and the revents that occured
         // it may be changed if some client disconnects/connects
         // figure out how to add the client sockets to the pollfds vector sumultaneously
-        if ( (ret = poll(__pollfds.data(), __pollfds.size(), timeout)) < 0)
+        if ( (ret = poll(__pollfds.data(), __pollfds.size(), -1)) < 0)
         {
             std::cerr << "Error: poll failed" << std::endl;
             return (false);
@@ -1025,8 +521,8 @@ void    Server::parseCommand( int fd )
     //     parseKick(res, fd);
      if (command == "invite")
         parseInvite(res, fd);
-    // else if (command == MODE)
-    //     parseMode(res, fd);
+    else if (command == MODE)
+        parseMode(res, fd);
     else if (command == TOPIC)
         parseTopic(res, fd);
     // else if (command == PING)
@@ -1094,8 +590,22 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
         it = __channels.find(chn[i]);
         if (it == __channels.end())
         {
-            __channels[chn[i]] = Channel(chn[i], fd, 0);
+            // __channels[chn[i]] = Channel(chn[i], fd, 0);
+
+            __channels[chn[i]].setChannelName(chn[i]);
+            __channels[chn[i]].setChannelTopic("");
+            __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+            __channels[chn[i]].setChannelModerator(fd);
+            __channels[chn[i]].setChannelType(0);
+            __channels[chn[i]].setChannelPass(0);
+            __channels[chn[i]].setChannelPassword("");
             std::cout << "Channel creted succesfully\n";
+            return ;
+        }
+        //if user already exist
+        if (it->second.getChannelClientt(fd) == 1)
+        {
+            std::cout << "User already exist in this channel\n";
             return ;
         }
         //check if it's private
@@ -1145,8 +655,10 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
 
 void    Server::parseMode(std::vector<std::string> &vec, int fd)
 {
-    std::map<int,Client>::iterator  it;
-    // size_t                          i;
+    std::map<std::string,Channel>::iterator  it;
+    std::vector<int>                         v;
+    std::vector<int>                         v_cl;
+    int                                      i;
 
     if (vec.size() == 0)
     {
@@ -1154,6 +666,135 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
         return ;
     }
     (void)fd;
+    //channels mode
+    //no such channel
+    it = __channels.find(vec[0]);
+    if (it == __channels.end())
+    {
+        std::cout << "ERR_NOSUCHCHANNEL(403)\n";
+        return ;
+    }
+    //channel without mode
+    if (vec.size() == 1)
+    {
+        std::cout << "RPL_CHANNELMODEIS(324)\n";
+        return ;
+    }
+    //channel with modes
+    if (vec[1].size() == 2)
+    {
+        //if it is moderator
+        v = it->second.getChannelModerator();
+        if (std::find(v.begin(), v.end(), fd) != v.end())
+        {
+            //fd of client
+            i = it->second.getChannelClient(vec[2]);
+            //plus or minus mode 
+            if (vec[1][0] == '+')
+            {
+                if (vec[1][1] == 'i')
+                {
+                    it->second.setChannelType(1);
+                    std::cout << "channel is a invite-only now\n";
+                    return ;
+                }
+                if (vec[1][1] == 'k')
+                {
+                    if (vec.size() == 3 && i != -1)
+                    {
+                        it->second.setChannelPass(1);
+                        it->second.setChannelPassword(vec[2]);
+                        std::cout << "We have set the password\n";
+                        return ;
+                    }
+                    else
+                    {
+                        std::cout << "ERR_INVALIDMODEPARAM(696)\n";
+                        return ;
+                    }
+                }
+                if (vec[1][1] == 'm')
+                {
+                    if (vec.size() == 3)
+                    {
+                        if (i != -1)
+                        {
+                            it->second.setChannelModerator(i);
+                            std::cout << "User with fd " << i << " is a moderator now\n";
+                            return ;
+                        }
+                        else
+                        {
+                            std::cout << "User with fd " << i << " is not a member of channel\n";
+                            return ;
+                        }
+                    }
+                }
+                // if (vec[1][1] == '')
+            }
+            else if (vec[1][0] == '-')
+            {
+                if (vec[1][1] == 'i')
+                {
+                    it->second.setChannelType(0);
+                    std::cout << "channel is a not invite-only now\n";
+                    return ;
+                }
+                if (vec[1][1] == 'k' && i != -1)
+                {
+                    if (vec.size() == 2)
+                    {
+                        it->second.setChannelPass(0);
+                        it->second.setChannelPassword("");
+                        std::cout << "The channel is without password now\n";
+                        return ;
+                    }
+                    else
+                    {
+                        std::cout << "ERR_INVALIDMODEPARAM(696)\n";
+                        return ;
+                    }
+                }
+                if (vec[1][1] == 'm')
+                {
+                    if (vec.size() == 3)
+                    {
+                        i = it->second.getChannelClient(vec[2]);
+                        if (i != -1)
+                        {
+                            v_cl = it->second.getChannelModerator();
+                            if (std::find(v_cl.begin(), v_cl.end(), i) != v_cl.end())
+                            {
+                                v_cl.erase(v_cl.begin() + i);
+                                std::cout << "User with fd " << i << " is no longer a moderator now\n";
+                                return ;
+                            }
+                            else
+                            {
+                                std::cout << "User with fd " << i << " is not a moderator of channel\n";
+                                return ;
+                            }
+                        }
+                        else
+                        {
+                            std::cout << "User with fd " << i << " is not a member of channel\n";
+                            return ;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                std::cout << "RPL_CHANNELMODEIS(324)\n";
+                return ;
+            }
+        }
+        else
+        {
+            std::cout << "ERR_CHANOPRIVSNEEDED(482)\n";
+            return ;
+        }
+    }
     // it = __users.find()
     // for (i = 0;i < __channels.size();++i)
     // {
