@@ -54,32 +54,48 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
     {
         if(__NewConnections.find(UserId)->second.getPassword().empty())
         {
-            if(cmd.first == "password" && cmd.second == __password)
-                __NewConnections.find(UserId)->second.setPassword(cmd.second);
+            if(cmd.first == "pass")
+            {
+                if(cmd.second != __password)
+                    std::cout << "ERR_PASSWDMISMATCH : 464\n";
+                else 
+                    __NewConnections.find(UserId)->second.setPassword(cmd.second);
+            }
             else
-                std::cout << "Error45\n";
-        }
-        else if(__NewConnections.find(UserId)->second.getUsername().empty())
-        {
-            if(cmd.first == "username")
-                 __NewConnections.find(UserId)->second.setUsername(cmd.second);
-            else
-                std::cout << "Error46\n";
+                std::cout << "u should give me Password first\n";
         }
         else if(__NewConnections.find(UserId)->second.getNickname().empty())
         {
-            if(cmd.first == "nickname")
+            
+            if(cmd.first == "nick")
             {
-                 __NewConnections.find(UserId)->second.setNickname(cmd.second);
-                 __NewConnections.find(UserId)->second.setIsLogged(true);
-                 __users[UserId] = __NewConnections.find(UserId)->second;
+                std::cout << cmd.second << std::endl;
+                if(__users.find(GetUserId(cmd.second)) != __users.end())
+                    std::cout << " ERR_NICKNAMEINUSE (433)  \n";
+                else
+                    __NewConnections.find(UserId)->second.setNickname(cmd.second);
             }
             else
-                std::cout << "Error47\n";
+                std::cout << "u should give me Nickname first\n";
+        }
+        else if(__NewConnections.find(UserId)->second.getUsername().empty())
+        {
+            if(cmd.first == "user")
+            {
+                if(cmd.second.empty())
+                    std::cout << "ERR_NEEDMOREPARAMS (461)\n";
+                else if(__users.find(GetUserId(cmd.second)) != __users.end())
+                    std::cout << " ERR_ALREADYREGISTERED (462) \n";
+                else
+                {
+                    __NewConnections.find(UserId)->second.setUsername(cmd.second);
+                    std::cout << __NewConnections.find(UserId)->second.getUsername() << " has been connected successfully\n";
+                    __NewConnections.find(UserId)->second.setIsLogged(true);
+                    __users[UserId] = __NewConnections.find(UserId)->second;
+                }
+            }
         }
     }
-    else
-        std::cout << "Error98\n";
 }
 std::vector<std::pair<std::string, std::string> > Server::ParceConnectionLine(std::string cmd)
 {
@@ -127,7 +143,7 @@ std::pair<std::string,std::string> Server::ParceConnection(std::string cmd)
     }
     ret.first = trim(ret.first);
     ret .second = trim(ret.second);
-    if(ret.first != "password" && ret.first != "username" && ret.first != "nickname")
+    if(ret.first != "pass" && ret.first != "user" && ret.first != "nick")
     {
         ret.first = "Error";
         ret.second = "Error";
@@ -149,6 +165,7 @@ int    Server::GetUserId(std::string UserName)
 {
     std::map<int, Client>::iterator it;
     for (it = __users.begin(); it != __users.end(); ++it) {
+        std::cout << "<<<" << it->second.getUsername() << ">>>\n" << std::endl;
         if(it->second.getUsername() == UserName)
             return(it->first);
     }
@@ -179,17 +196,19 @@ void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
     if(!__arg.size())
-    {
+    {   
+        std::cout << "hi\n";
         __ListChannelsUserInvTo(__UserId);
         return;
     }
+    std::cout << "|" << __arg[0] << "|" << std::endl;
+    std::cout << "|" << __arg[1] << "|" << std::endl;
     int __ReceiverId = GetUserId(__arg[0]);
+    std::cout << __ReceiverId << std::endl;
     if(__arg.size() == 1)
         __ValRead = send(__UserId,"341\n",5, 0);
     else if(__ReceiverId == -1)
         __ValRead = send(__UserId,"403\n",5, 0);
-    else if(__channels.find(__arg[1]) == __channels.end())
-        __ValRead = send(__UserId,"403",4, 0);
     else if(!__channels[__arg[1]].getClientNb())
         __ValRead = send(__UserId,"482\n",5, 0);
     else if(!__channels[__arg[1]].getInvited(__UserId))
@@ -198,7 +217,6 @@ void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
     {
         __ValRead = send(__UserId,"341\n",5, 0);
         __channels[__arg[1]].SetInviteds(__ReceiverId, __users[__UserId]);
-        // __channels[__arg[1]].setChannelClients(__ReceiverId , __arg[0]);
     }
     if(__ValRead == - 1)
         std::cout << "send() failde\n";
@@ -404,7 +422,7 @@ bool Server::run( void )
                             {
                                 std::vector<std::pair<std::string, std::string> > cmds = ParceConnectionLine(CurrentBuffer);
                                 if(cmds.size() != 3)
-                                    std::cout << "Error110\n";
+                                    std::cout << "correct Form : Pass <password> \n nick <nickname> \n user <username>\n";
                                 else
                                 {
                                     __NewConnections.find(__pollfds[i].fd)->second.setPassword(cmds[0].second);
@@ -466,17 +484,20 @@ void    Server::parseCommand( int fd )
         line.erase(0, pos + 1);
     }
     res.push_back(line);
+    res[res.size() - 1] =  res[res.size() - 1].substr(0, res[res.size() - 1].size() - 1);
     command = res[0];
     for (size_t i = 0; i < command.size(); ++i){
         command[i] = (char)(tolower(command[i]));
     }
-    for(size_t i = 0 ; i < res.size();i++)
-        std::cout << res[i] << std::endl;
+    // for(size_t i = 0 ; i < res.size();i++)
+    //     std::cout << res[i] << std::endl;
     // (void)fd;  
         // if (command == KICK)
         //     parseKick(res, fd);
     // else if (command == MODE)
         // parseMode(res, fd);
+    res.erase(res.begin());
+    std::cout << command << "|" << std::endl;
     if (command == INVITE)
         parseInvite(res, fd);
     if (command == TOPIC)
@@ -562,7 +583,13 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
         it = __channels.find(chn[i]);
         if (it == __channels.end())
         {
-            __channels[chn[i]] = Channel(chn[i], fd, 0);
+            __channels[chn[i]].setChannelName(chn[i]);
+            __channels[chn[i]].setChannelTopic("");
+            __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+            __channels[chn[i]].setChannelModerator(fd);
+            __channels[chn[i]].setChannelType(0);
+            __channels[chn[i]].setChannelPass(0);
+            __channels[chn[i]].setChannelPassword("");
             std::cout << "Channel creted succesfully\n";
             return ;
         }
