@@ -67,19 +67,19 @@ void Client::setCommand(const std::string& command) {
 std::string Client::getCommand() const {
     return __command;
 }
-void            Client::setIsbuffer(std::string buffer)
+void            Client::setBuffer(std::string buffer)
 {
     __buffer = buffer;
 }
-std::string     Client::getIsbuffer()
+std::string     Client::getBuffer()
 {
     return(__buffer);
 }
-void            Client::setIspassword(std::string password)
+void            Client::setPassword(std::string password)
 {
     __password = password;
 }
-std::string     Client::getIspassword()
+std::string     Client::getPassword()
 {
     return(__password);
 }

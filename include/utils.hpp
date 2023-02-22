@@ -19,7 +19,7 @@
 # include <errno.h>
 # include <poll.h>
 # include <signal.h>
-
+# include <set>
 
 # define KICK "kick"
 # define MODE "mode"
@@ -34,6 +34,9 @@
 # define LIST "list"
 # define PRIVMSG "privmsg"
 # define JOIN "join"
+
+# define CHANNEL_PREFIX '#'
+# define MAXPARAMS 14
 
 
 

@@ -36,9 +36,9 @@ class Client {
         void            setCommand(const std::string& command);
         std::string     getCommand() const;
         int             getCommandType() const;
-        void            setIsbuffer(std::string buffer);
-        std::string     getIsbuffer();
-        void            setIspassword(std::string password);
-        std::string     getIspassword();
+        void            setBuffer(std::string buffer);
+        std::string     getBuffer();
+        void            setPassword(std::string password);
+        std::string     getPassword();
 };
 #endif

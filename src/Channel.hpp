@@ -36,6 +36,7 @@ class Channel{
         std::map<int, Client>::const_iterator EndIterator() const;
 
         
+        const std::map<int, Client>& getChannelClients() const;//return __channelClients map, needed to check if user is in channel
 
         void SetInviteds(int __UserID, Client User);
         void setChannelName(const std::string& channelName);
