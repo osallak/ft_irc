@@ -31,6 +31,7 @@ class Server{
         std::map<int,Client>        __users;
         std::map<std::string,Channel> __channels;
         std::map<int,Client>        __NewConnections;
+        int                         __currentNdx;
     public:
 
         Server();
@@ -64,6 +65,8 @@ class Server{
         void                   __ListChannelsUserInvTo(int UserId);
         void                    parseTopic(std::vector<std::string>__arg,int __UserId);
         void                    parsePart(std::vector<std::string>__arg,int __UserId);
+        void                    parseQuit(std::vector<std::string>__arg,int __UserId);
+        void                    DeleteUser(int __Userid);
 
 };
 
