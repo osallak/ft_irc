@@ -67,6 +67,7 @@ class Server{
         void                    parsePart(std::vector<std::string>__arg,int __UserId);
         void                    parseQuit(std::vector<std::string>__arg,int __UserId);
         void                    DeleteUser(int __Userid);
+        void                    parseNames(std::vector<std::string> &vec, int fd);
 
 };
 

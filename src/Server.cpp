@@ -663,7 +663,7 @@ void    Server::parseCommand( int fd )
     }
     line = line.substr(0,line.size() - 1);
     res.push_back(line);
-    res[res.size() - 1] =  res[res.size() - 1].substr(0, res[res.size() - 1].size() - 1);
+    // res[res.size() - 1] =  res[res.size() - 1].substr(0, res[res.size() - 1].size() - 1);
     command = res[0];
     for (size_t i = 0; i < command.size(); ++i){
         command[i] = (char)(tolower(command[i]));
@@ -697,12 +697,15 @@ void    Server::parseCommand( int fd )
         parseQuit(res, fd);
     else if (command == PART)
         parsePart(res, fd);
-    // else if (command == NAMES)
-    //     parseNames(res, fd);
+    else if (command == NAMES)
+    {
+        // std::cout  << "if (command == NAMES)\n";
+        parseNames(res, fd);
+    }
     // else if (command == LIST)
     //     parseList(res, fd);q
-    // else if (command == PRIVMSG)
-    //     parsePrivmsg(res, fd);
+    else if (command == PRIVMSG)
+        parsePrivmsg(res, fd);
     else if (command == JOIN)
         parseJoin(res, fd);
 }
@@ -740,7 +743,7 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
         std::cout << "ERR_NEEDMOREPARAMS(461)\n";
         return ;
     }
-    std::cout << "|" << vec[1] << "|" << std::endl;
+    // std::cout << "|" << vec[1] << "|" << std::endl;
     if (vec[0][0] != '#' || !vec[0][1])
     {
         std::cout << "Bad channel name\n";
@@ -1163,6 +1166,7 @@ void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
     
     std::string msg = "";
 
+    std::cout << "privmsg: "<<vec[1] << std::endl;
     if (vec[1][0] != ':')
         msg += ":";
     
@@ -1213,7 +1217,7 @@ void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
                 std::cout << "MSG TO USER: " << targetsVec[i] << " :" << msg << std::endl;
                 //TODO: send message to the user
 
-            } 
+            }
         }
     }
 }
@@ -1230,3 +1234,50 @@ bool    Server::isInChannel(Channel &channel, int fd) const
     return (false);
 }
 
+void    listAllUsers(std::map<int,Client> const &__users)
+{
+    std::map<int, Client>::const_iterator it = __users.begin();
+
+    std::cout << "USERS: " << std::endl;
+    for (; it != __users.end(); ++it)
+    {
+       std::cout << "\t" << it->second.getUsername() << std::endl; 
+    }
+}
+
+void    Server::parseNames(std::vector<std::string> &vec, int fd)
+{
+    // std::cout << "NAMES\n" << std::endl;
+    if (vec.size() == 0)
+    {
+        listAllUsers(__users);
+        return ;
+    }
+    if (vec.size() > MAXPARAMS)
+    {
+        std::cout << "ERR_TOOMANYARGUMENTS(461)\n";// TODO: check if it's the right error code
+        return ;
+    }
+    for (size_t i = 0; i < vec.size(); ++i)
+    {
+        std::map<std::string, Channel>::iterator it = __channels.find(vec[i]);// search for channel in the map
+
+        if (it == __channels.end()) {
+            std::cout << "ERR_NOSUCHCHANNEL(403)\n";
+            return ;//TODO: continue or return?
+        }
+        
+        Channel channel = it->second;
+        if (isInChannel(channel, fd) == false)
+        {
+            std::cout << "ERR_CANNOTSENDTOCHAN(404)\n";
+            return ;
+        }
+        std::map<int, Client>::const_iterator it2 = channel.getChannelClients().begin();
+        std::cout << "353 " << channel.getChannelName() << " :\n";
+        for (; it2 != channel.getChannelClients().end(); ++it2)
+        {
+            std::cout << "\t" << it2->second.getUsername() << "\n";
+        }
+    }
+}
