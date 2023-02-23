@@ -47,7 +47,8 @@ class Channel{
         void setChannelPass(const int& channelPass);
         void setChannelPassword(const std::string& channelPassword);
         void setChannelClients(int __UserId , std::string __UserName);
-
+        void eraseClient(int __UserId);
+        void eraseInvited(int __UserId);
 
 };
 

@@ -192,6 +192,42 @@ void    Server::__ListChannelsUserInvTo(int UserId)
         }
     }
 }
+void Server::DeleteUser(int __UserId)
+{
+    std::map<std::string,Channel>::iterator it = __channels.begin();
+    while(it != __channels.end())
+    {
+        it->second.eraseClient(__UserId);
+        it->second.eraseInvited(__UserId);
+        it++;
+    }
+    __users.erase(__UserId);
+    __NewConnections.erase(__UserId);
+     std::cout << "Client disconnected" << std::endl;
+     close(__pollfds[__currentNdx].fd);
+     __pollfds.erase(__pollfds.begin() + __currentNdx);
+    //  close(__UserId);
+    // __pollfds.erase(__pollfds.begin() + i);
+}
+void Server::parseQuit(std::vector<std::string>__arg,int __UserId)
+{
+    int __ValRead = 0;
+    DeleteUser(__UserId);
+    std::string msg = "Quit:";
+    for(size_t i = 0; i < __arg.size();i++)
+    {
+        if(i != 0)
+            msg+=" ";
+        msg+=__arg[i];
+    }
+    std::map<int, Client>::iterator it = __users.begin();
+    msg+="\n";
+    while(it != __users.end())
+    {
+        __ValRead = send(it->first,msg.c_str(),msg.size(), 0);
+        it++;
+    }
+}
 void Server::parsePart(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
@@ -204,13 +240,9 @@ void Server::parsePart(std::vector<std::string>__arg,int __UserId)
             __ValRead = send(__UserId,"ERR_NOSUCHCHANNEL (403)\n",25, 0);
         else if(__channels.find(channels[i])->second.getChannelClients().find(__UserId) ==
              __channels.find(channels[i])->second.getChannelClients().end())
-        {
             __ValRead = send(__UserId,"ERR_NOTONCHANNEL (442)\n",26, 0);
-        }
         else
-        {
-            // __channels.[channels[i]].erase(__channels.find(channels[i])->second.getChannelClients().find(__UserId));
-        }
+            __channels[channels[i]].eraseClient(__UserId);
         if(__ValRead == -1)
             std::cout << "send() failde\n";
         __ValRead = 0;
@@ -491,6 +523,7 @@ bool Server::run( void )
 
         // from here to the end of the loop, it's not complete yet and it's not working  (some cases are not handled yet)
         for (unsigned int i = 0; i < __pollfds.size(); i++){
+            __currentNdx = i;
             if (__pollfds[i].revents == 0) // if there is no event, continue
                 continue;
             if (!(__pollfds[i].revents & POLLIN)) // if there is an event but it's not POLLIN, move on to the next socket
@@ -635,6 +668,13 @@ void    Server::parseCommand( int fd )
     for (size_t i = 0; i < command.size(); ++i){
         command[i] = (char)(tolower(command[i]));
     }
+    // for(size_t i = 0 ; i < res.size();i++)
+    //     std::cout << res[i] << std::endl;
+    // (void)fd;
+        // if (command == KICK)
+        //     parseKick(res, fd);
+    // else if (command == MODE)
+        // parseMode(res, fd);
     res.erase(res.begin());
     for(size_t i = 0 ; i < res.size();i++)
         std::cout << res[i] << std::endl;
@@ -653,10 +693,8 @@ void    Server::parseCommand( int fd )
     //     parsePing(res, fd);
     // else if (command == PONG)
     //     parsePong(res, fd);
-    // else if (command == QUIT)
-    //     parseQuit(res, fd);
-    // else if (command == ERROR)
-    //     parseError(res, fd);
+    else if (command == QUIT)
+        parseQuit(res, fd);
     else if (command == PART)
         parsePart(res, fd);
     // else if (command == NAMES)
@@ -702,6 +740,7 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
         std::cout << "ERR_NEEDMOREPARAMS(461)\n";
         return ;
     }
+    std::cout << "|" << vec[1] << "|" << std::endl;
     if (vec[0][0] != '#' || !vec[0][1])
     {
         std::cout << "Bad channel name\n";
