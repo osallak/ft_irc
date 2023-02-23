@@ -149,9 +149,7 @@ std::map<int, Client>::const_iterator Channel::BigenIterator() const
 std::map<int, Client>::const_iterator Channel::EndIterator() const
 {
     return(__channelClients.end());
-
 }
-
 const std::map<int, Client>& Channel::getChannelClients() const
 {
     return __channelClients;
@@ -160,6 +158,18 @@ void Channel::setChannelModerator(int& channelModerator)
 {
     __channelModerator.push_back(channelModerator);
 }
+void Channel::eraseClient(int __UserId)
+{
+    if(__channelClients.find(__UserId) != __channelClients.end())
+        __channelClients.erase(__UserId);
+}
+void Channel::eraseInvited(int __UserId)
+{
+    if(__channelInvited.find(__UserId) != __channelInvited.end())
+        __channelInvited.erase(__UserId);
+}
+
+
 
 // Path: src/Channel.cpp
 // created: 2023/02/19 5:14:09 by osallak
