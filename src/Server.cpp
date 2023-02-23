@@ -592,7 +592,7 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
     {
         while (1)
         {
-            // puts("here1");
+            puts("here1");
             it = __channels.find(chn[i]);
             if (it == __channels.end())
             {
@@ -611,27 +611,27 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                 std::cout << "Channel " << chn[i] << " created succesfully\n";
                 break ;
             }
-            // puts("here2");
             //if user already exist
             if (it->second.getChannelClientt(fd) == 1)
             {
                 std::cout << "User already exist in the channel " << chn[i] << "\n";
                 break ;
             }
-            // puts("here3");
             //check if it's private
             if (it->second.getChannelType() == 1)
             {
-                // puts("here4");
+                if (it->second.getChannelInvited().empty())
+                {
+                    std::cout << "ERR_INVITEONLYCHAN(473)\n";
+                    break ;
+                }
                 inv = it->second.getChannelInvited().find(fd);
                 if (inv == it->second.getChannelInvited().end())
                 {
-                    // puts("here5");
                     std::cout << "ERR_INVITEONLYCHAN(473)\n";
                     break ;
                 }
                 std::cout << inv->second.getUsername() << std::endl;
-                // puts("here6");
                 break ;
                 if (it->second.getChannelPass() == 1)
                 {
@@ -723,11 +723,11 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                 {
                     if (it->second.getChannelType() == 1)
                     {
-                        std::cout << "channel is already private\n";
+                        std::cout << "channel " << it->second.getChannelName() << " is already private\n";
                         return ;
                     }
                     it->second.setChannelType(1);
-                    std::cout << "channel is private now\n";
+                    std::cout << "channel " << it->second.getChannelName() << " is private now\n";
                     return ;
                 }
                 if (vec[1][1] == 'k')
@@ -775,11 +775,11 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                 {
                     if (it->second.getChannelType() == 0)
                     {
-                        std::cout << "channel is already public\n";
+                        std::cout << "channel " << it->second.getChannelName() << " is already public\n";
                         return ;
                     }
                     it->second.setChannelType(0);
-                    std::cout << "channel is public now\n";
+                    std::cout << "channel " << it->second.getChannelName() << " is public now\n";
                     return ;
                 }
                 if (vec[1][1] == 'k' && i != -1)
@@ -788,7 +788,7 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                     {
                         it->second.setChannelPass(0);
                         it->second.setChannelPassword("");
-                        std::cout << "The channel is without password now\n";
+                        std::cout << "The channel " << it->second.getChannelName() << " is without password now\n";
                         return ;
                     }
                     else
