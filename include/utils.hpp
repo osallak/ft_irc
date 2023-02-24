@@ -41,20 +41,8 @@
 
 
 /*
-PING
-PONG
-QUIT
-ERROR
-PART
-NAMES
-LIST
-PRIVMSG
-JOIN
-
+LIST//TODO: LIST
 KICK
-MODE
-INVITE
-TOPIC
 
 */
 // this file is for the common functions, classes, etc. that are used in multiple files

@@ -702,8 +702,8 @@ void    Server::parseCommand( int fd )
         // std::cout  << "if (command == NAMES)\n";
         parseNames(res, fd);
     }
-    // else if (command == LIST)
-    //     parseList(res, fd);q
+    else if (command == LIST)
+        parseList(res, fd);
     else if (command == PRIVMSG)
         parsePrivmsg(res, fd);
     else if (command == JOIN)
@@ -1279,5 +1279,45 @@ void    Server::parseNames(std::vector<std::string> &vec, int fd)
         {
             std::cout << "\t" << it2->second.getUsername() << "\n";
         }
+    }
+}
+
+
+void    Server::parseList(std::vector<std::string> &vec, int fd)
+{
+    if (vec.size() > MAXPARAMS)
+    {
+        std::cout << "ERR_TOOMANYARGUMENTS(461)\n";// TODO: check if it's the right error code
+        return ;
+    }
+    if (vec.size() == 0)
+    {
+        std::map<std::string, Channel>::iterator it = __channels.begin();
+        std::cout << "321 " << "Channel :Users Name" << std::endl;
+        for (; it != __channels.end(); ++it)
+        {
+            std::cout << "322 " << it->second.getChannelName() << " " << it->second.getChannelClients().size() << " :" << it->second.getChannelTopic() << std::endl;
+        }
+        std::cout << "323 " << "End of /LIST" << std::endl;
+        return ;
+    }
+    
+    std::vector<std::string> chns = split(vec[0], ',');
+
+    for (size_t i = 0; i < chns.size(); ++i) {
+        std::map<std::string, Channel>::iterator it = __channels.find(chns[i]);// search for channel in the map
+
+        if (it == __channels.end()) {
+            std::cout << "ERR_NOSUCHCHANNEL(403)\n";
+            return ;//TODO: continue or return?
+        }
+        
+        Channel channel = it->second;
+        if (channel.getChannelType() == 1 && isInChannel(channel, fd) == false)
+        {
+            std::cout << "ERR_CANNOTSENDTOCHAN(404)\n";
+            return ;
+        }
+        std::cout << "322 " << channel.getChannelName() << " " << channel.getChannelClients().size() << " :" << channel.getChannelTopic() << std::endl;
     }
 }
