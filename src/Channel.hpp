@@ -49,6 +49,7 @@ class Channel{
         void setChannelClients(int __UserId , std::string __UserName);
         void eraseClient(int __UserId);
         void eraseInvited(int __UserId);
+        void eraseModerator(int __UserId);
 
 };
 

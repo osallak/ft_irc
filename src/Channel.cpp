@@ -181,7 +181,14 @@ void Channel::eraseInvited(int __UserId)
         __channelInvited.erase(__UserId);
 }
 
-
+void    Channel::eraseModerator(int __UserId)
+{
+    std::vector<int>::iterator it;
+    for (it = __channelModerator.begin(); it != __channelModerator.end(); ++it) {
+        if(*it == __UserId)
+            __channelModerator.erase(it);
+    }
+}
 
 // Path: src/Channel.cpp
 // created: 2023/02/19 5:14:09 by osallak

@@ -663,45 +663,29 @@ void    Server::parseCommand( int fd )
     }
     line = line.substr(0,line.size() - 1);
     res.push_back(line);
-    // res[res.size() - 1] =  res[res.size() - 1].substr(0, res[res.size() - 1].size() - 1);
     command = res[0];
     for (size_t i = 0; i < command.size(); ++i){
         command[i] = (char)(tolower(command[i]));
     }
-    // for(size_t i = 0 ; i < res.size();i++)
-    //     std::cout << res[i] << std::endl;
-    // (void)fd;
-        // if (command == KICK)
-        //     parseKick(res, fd);
-    // else if (command == MODE)
-        // parseMode(res, fd);
     res.erase(res.begin());
     for(size_t i = 0 ; i < res.size();i++)
         std::cout << res[i] << std::endl;
-    // (void)fd;
     std::cout << "Cmd ------>" << command  << "|"<< std::endl;
     std::cout << res.size() << std::endl;
-    // if (command == KICK)
-    //     parseKick(res, fd);
-     if (command == "invite")
+    if (command == KICK)
+        parseKick(res, fd);
+    else if (command == "invite")
         parseInvite(res, fd);
     else if (command == MODE)
         parseMode(res, fd);
     else if (command == TOPIC)
         parseTopic(res, fd);
-    // else if (command == PING)
-    //     parsePing(res, fd);
-    // else if (command == PONG)
-    //     parsePong(res, fd);
     else if (command == QUIT)
         parseQuit(res, fd);
     else if (command == PART)
         parsePart(res, fd);
     else if (command == NAMES)
-    {
-        // std::cout  << "if (command == NAMES)\n";
         parseNames(res, fd);
-    }
     else if (command == LIST)
         parseList(res, fd);
     else if (command == PRIVMSG)
@@ -1296,6 +1280,8 @@ void    Server::parseList(std::vector<std::string> &vec, int fd)
         std::cout << "321 " << "Channel :Users Name" << std::endl;
         for (; it != __channels.end(); ++it)
         {
+            if (it->second.getChannelType() == 1 && !isInChannel(it->second, fd))
+                continue;
             std::cout << "322 " << it->second.getChannelName() << " " << it->second.getChannelClients().size() << " :" << it->second.getChannelTopic() << std::endl;
         }
         std::cout << "323 " << "End of /LIST" << std::endl;
@@ -1320,4 +1306,45 @@ void    Server::parseList(std::vector<std::string> &vec, int fd)
         }
         std::cout << "322 " << channel.getChannelName() << " " << channel.getChannelClients().size() << " :" << channel.getChannelTopic() << std::endl;
     }
+}
+
+void    Server::parseKick(std::vector<std::string> &vec, int fd)
+{
+    if (vec.size() == 0) {
+        std::cout << "ERR_NEEDMOREPARAMS(461)\n";
+        return ;
+    } else if (vec.size() > 2){
+        std::cout << "ERR_TOOMANYARGUMENTS(461)\n";
+        return ;
+    }
+    std::map<std::string, Channel>::iterator it = __channels.find(vec[0]);
+    if (it == __channels.end()) {
+        std::cout << "ERR_NOSUCHCHANNEL(403)\n";
+        return ;
+    }
+    Channel channel = it->second;
+    if (!isInChannel(channel, fd))
+    {
+        std::cout << "ERR_NOTONCHANNEL (442)\n";
+        return ;
+    }
+
+    std::vector<int>::iterator it3 = std::find(channel.getChannelModerator().begin(), channel.getChannelModerator().end(), fd);
+    if (it3 == channel.getChannelModerator().end())
+    {
+        std::cout << "ERR_CHANOPRIVSNEEDED(482)\n";
+        return ;
+    }
+    std::map<int, Client>::const_iterator it2 = channel.getChannelClients().begin();
+    for (; it2 != channel.getChannelClients().end(); ++it2)
+    {
+        if (it2->second.getUsername() == vec[1])
+        {
+            std::cout << "KICK " << channel.getChannelName() << " " << vec[1] << " :" << "Kicked by " << __users[fd].getUsername() << std::endl;
+            channel.eraseClient(it2->first);
+            // channel.eraseModerator(it2->first);
+            return ;
+        }
+    }
+    std::cout << "ERR_USERNOTINCHANNEL(441)\n";
 }

@@ -69,7 +69,6 @@ class Server{
         void                    DeleteUser(int __Userid);
         void                    parseNames(std::vector<std::string> &vec, int fd);
         void                    parseList(std::vector<std::string> &vec, int fd);
-
 };
 
 
