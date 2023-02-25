@@ -55,7 +55,7 @@ class Server{
         // void                        parseKick( std::vector<std::string> &, int);
         void                        parseJoin( std::vector<std::string> &, int);
         void                        parseMode( std::vector<std::string> &, int);
-        void                   setCommand( std::string );
+        // void                   setCommand( std::string );
         void                   parseCommand( int fd );
         void                   parseKick( std::vector<std::string> &, int);
         void                   parsePrivmsg( std::vector<std::string> &, int);
@@ -67,8 +67,9 @@ class Server{
         void                    parsePart(std::vector<std::string>__arg,int __UserId);
         void                    parseQuit(std::vector<std::string>__arg,int __UserId);
         void                    DeleteUser(int __Userid);
-        void                    parseNames(std::vector<std::string> &vec, int fd);
-        void                    parseList(std::vector<std::string> &vec, int fd);
+        void                    parseNames(std::vector<std::string> &, int fd);
+        void                    parseList(std::vector<std::string> &, int fd);
+        void                    runBot(const std::string& ,int);
 };
 
 
