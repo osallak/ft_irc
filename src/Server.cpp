@@ -16,6 +16,16 @@
     - make a local branch for each feature you want to add, bug you want to fix, etc...
 
 */
+std::string backslashR(const std::string& str)
+{
+    std::string ret;
+    for(size_t i = 0 ; i < str.size();i++)
+    {
+        if(str[i] != '\r')
+            ret.push_back(str[i]);
+    }
+    return(ret.substr(0, ret.size() - 1));
+}
 std::string trim(const std::string& str) {
     size_t first = str.find_first_not_of(' ');
     if (std::string::npos == first) {
@@ -50,6 +60,8 @@ Server &Server::operator=(const Server &copy)
 }
 void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
 {
+    std::cout << "|" << cmd.first << "|" << std::endl;
+    std::cout << "|" << cmd.second << "|" << std::endl;
     if(cmd.first != "Error")
     {
         if(__NewConnections.find(UserId)->second.getPassword().empty())
@@ -88,7 +100,9 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
                 else
                 {
                     __NewConnections.find(UserId)->second.setUsername(cmd.second);
-                    std::cout << __NewConnections.find(UserId)->second.getUsername() << " has been connected successfully\n";
+            
+                    std::string msg = ":" + std::string("al9awada") + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!" + __NewConnections.find(UserId)->second.getUsername()+ "@" + "10.11.12.5" + "\n";;
+                    send(UserId,msg.c_str(),msg.size(),0);
                     __NewConnections.find(UserId)->second.setIsLogged(true);
                     __users[UserId] = __NewConnections.find(UserId)->second;
                 }
@@ -118,7 +132,7 @@ std::vector<std::pair<std::string, std::string> > Server::ParceConnectionLine(st
             return(ret);
         ret.push_back(std::make_pair(trim(ConnectionInf[i].substr(0,__found)),trim(ConnectionInf[i].substr(__found + 1, -1))));
     }
-    if((ret[0].first != "password" || ret[0].second != __password ) || ret[2].first != "nickname" || ret[1].first != "username")
+    if((ret[0].first != "pass" || ret[0].second != __password ) || ret[2].first != "nick" || ret[1].first != "user")
     {
         ret.push_back(std::make_pair("error","error"));
     }
@@ -138,7 +152,7 @@ std::pair<std::string,std::string> Server::ParceConnection(std::string cmd)
     else
     {
         ret.first = cmd.substr(0,found);
-        ret.second = cmd.substr(found + 1, cmd.size() - found - 2);
+        ret.second = cmd.substr(found + 1, cmd.size() - (found + 1));
     }
     ret.first = trim(ret.first);
     ret .second = trim(ret.second);
@@ -463,11 +477,14 @@ bool Server::run( void )
                     else
                     {
                         std::string CurrentBuffer = __NewConnections.find(__pollfds[i].fd)->second.getBuffer();
+                        CurrentBuffer = backslashR(CurrentBuffer);
                         CurrentBuffer+=buffer;
                         __NewConnections.find(__pollfds[i].fd)->second.setBuffer(CurrentBuffer);
                         CurrentBuffer =   __NewConnections.find(__pollfds[i].fd)->second.getBuffer();
                         if(CurrentBuffer.find("\n") != std::string::npos)
                         {
+
+
                             int __Backtoline = 0;
                             for(unsigned int i = 0 ; i < CurrentBuffer.size();i++)
                             {
@@ -476,7 +493,10 @@ bool Server::run( void )
                                 CurrentBuffer[i] = (char)tolower(CurrentBuffer[i]);
                             }
                             if(__Backtoline == 1)
+                            {
+                                CurrentBuffer = backslashR(CurrentBuffer);
                                 SetUserInf(ParceConnection(CurrentBuffer), __pollfds[i].fd);
+                            }
                             else
                             {
                                 std::vector<std::pair<std::string, std::string> > cmds = ParceConnectionLine(CurrentBuffer);
