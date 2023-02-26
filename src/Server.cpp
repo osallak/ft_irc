@@ -16,6 +16,16 @@
     - make a local branch for each feature you want to add, bug you want to fix, etc...
 
 */
+std::string backslashR(const std::string& str)
+{
+    std::string ret;
+    for(size_t i = 0 ; i < str.size();i++)
+    {
+        if(str[i] != '\r')
+            ret.push_back(str[i]);
+    }
+    return(ret.substr(0, ret.size() - 1));
+}
 std::string trim(const std::string& str) {
     size_t first = str.find_first_not_of(' ');
     if (std::string::npos == first) {
@@ -50,6 +60,7 @@ Server &Server::operator=(const Server &copy)
 }
 void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
 {
+    int __ValRead = 0;
     if(cmd.first != "Error")
     {
         if(__NewConnections.find(UserId)->second.getPassword().empty())
@@ -57,42 +68,48 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
             if(cmd.first == "pass")
             {
                 if(cmd.second != __password)
-                    std::cout << "ERR_PASSWDMISMATCH : 464\n";
+                    __ValRead = send(UserId,":* 667 * Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0);
                 else 
                     __NewConnections.find(UserId)->second.setPassword(cmd.second);
             }
             else
-                std::cout << "u should give me Password first\n";
+                __ValRead = send(UserId,":* 667 * Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0);
+
         }
         else if(__NewConnections.find(UserId)->second.getNickname().empty())
         {
-            
             if(cmd.first == "nick")
             {
                 if(__users.find(GetUserId(cmd.second)) != __users.end())
-                    std::cout << " ERR_NICKNAMEINUSE (433)  \n";
+                     __ValRead = send(UserId,":NICK 433 * is already on channel\n",35,0);
                 else
                     __NewConnections.find(UserId)->second.setNickname(cmd.second);
             }
             else
-                std::cout << "u should give me Nickname first\n";
+                __ValRead = send(UserId,":* 667 * Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0);
+
         }
         else if(__NewConnections.find(UserId)->second.getUsername().empty())
         {
             if(cmd.first == "user")
             {
                 if(cmd.second.empty())
-                    std::cout << "ERR_NEEDMOREPARAMS (461)\n";
+                    __ValRead = send(UserId,":* 461 * Not enough parameters\n",32,0);
                 else if(__users.find(GetUserId(cmd.second)) != __users.end())
-                    std::cout << " ERR_ALREADYREGISTERED (462) \n";
+                    __ValRead = send(UserId,":* 462 * You may not reregister\n",32,0);
                 else
                 {
-                    __NewConnections.find(UserId)->second.setUsername(cmd.second);
-                    std::cout << __NewConnections.find(UserId)->second.getUsername() << " has been connected successfully\n";
+                   __NewConnections.find(UserId)->second.setUsername(cmd.second);
+                    std::string msg = ":" + std::string("Rijal") + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!" + __NewConnections.find(UserId)->second.getUsername()+ "@" + "10.11.12.5" + "\n";;
+                    send(UserId,msg.c_str(),msg.size(),0);
                     __NewConnections.find(UserId)->second.setIsLogged(true);
                     __users[UserId] = __NewConnections.find(UserId)->second;
                 }
             }
+        }
+        if(__ValRead == -1)
+        {
+            std::cout << "send() flaid\n";
         }
     }
 }
@@ -138,7 +155,7 @@ std::pair<std::string,std::string> Server::ParceConnection(std::string cmd)
     else
     {
         ret.first = cmd.substr(0,found);
-        ret.second = cmd.substr(found + 1, cmd.size() - found - 2);
+        ret.second = cmd.substr(found + 1, cmd.size() - found - 1);
     }
     ret.first = trim(ret.first);
     ret .second = trim(ret.second);
@@ -584,6 +601,7 @@ bool Server::run( void )
                         CurrentBuffer+=buffer;
                         __NewConnections.find(__pollfds[i].fd)->second.setBuffer(CurrentBuffer);
                         CurrentBuffer =   __NewConnections.find(__pollfds[i].fd)->second.getBuffer();
+
                         if(CurrentBuffer.find("\n") != std::string::npos)
                         {
                             int __Backtoline = 0;
@@ -594,7 +612,11 @@ bool Server::run( void )
                                 CurrentBuffer[i] = (char)tolower(CurrentBuffer[i]);
                             }
                             if(__Backtoline == 1)
+                            {
+                                
+                                CurrentBuffer = backslashR(CurrentBuffer);
                                 SetUserInf(ParceConnection(CurrentBuffer), __pollfds[i].fd);
+                            }
                             else
                             {
                                 std::vector<std::pair<std::string, std::string> > cmds = ParceConnectionLine(CurrentBuffer);
@@ -602,6 +624,7 @@ bool Server::run( void )
                                     std::cout << "correct Form : Pass <password> \\n nick <nickname> \\n user <username>\n";
                                 else
                                 {
+                                    std::cout << "9alwa\n";
                                     __NewConnections.find(__pollfds[i].fd)->second.setPassword(cmds[0].second);
                                     __NewConnections.find(__pollfds[i].fd)->second.setUsername(cmds[1].second);
                                     __NewConnections.find(__pollfds[i].fd)->second.setUsername(cmds[2].second);
