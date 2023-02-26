@@ -60,8 +60,7 @@ Server &Server::operator=(const Server &copy)
 }
 void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
 {
-    std::cout << "|" << cmd.first << "|" << std::endl;
-    std::cout << "|" << cmd.second << "|" << std::endl;
+    int __ValRead = 0;
     if(cmd.first != "Error")
     {
         if(__NewConnections.find(UserId)->second.getPassword().empty())
@@ -69,16 +68,16 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
             if(cmd.first == "pass")
             {
                 if(cmd.second != __password)
-                    std::cout << "ERR_PASSWDMISMATCH : 464\n";
+                    __ValRead = send(UserId,":* 667 * Enter PASS <password>, NICK <nickname>, USER <user>",61,0);
                 else 
                     __NewConnections.find(UserId)->second.setPassword(cmd.second);
             }
             else
-                std::cout << "u should give me Password first\n";
+                __ValRead = send(UserId,":* 667 * Enter PASS <password>, NICK <nickname>, USER <user>",61,0);
+
         }
         else if(__NewConnections.find(UserId)->second.getNickname().empty())
         {
-            
             if(cmd.first == "nick")
             {
                 if(__users.find(GetUserId(cmd.second)) != __users.end())
@@ -87,7 +86,8 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
                     __NewConnections.find(UserId)->second.setNickname(cmd.second);
             }
             else
-                std::cout << "u should give me Nickname first\n";
+                __ValRead = send(UserId,":* 667 * Enter PASS <password>, NICK <nickname>, USER <user>",61,0);
+
         }
         else if(__NewConnections.find(UserId)->second.getUsername().empty())
         {
@@ -101,7 +101,7 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
                 {
                     __NewConnections.find(UserId)->second.setUsername(cmd.second);
             
-                    std::string msg = ":" + std::string("al9awada") + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!" + __NewConnections.find(UserId)->second.getUsername()+ "@" + "10.11.12.5" + "\n";;
+                    std::string msg = ":" + std::string("Rijal") + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!" + __NewConnections.find(UserId)->second.getUsername()+ "@" + "10.11.12.5" + "\n";;
                     send(UserId,msg.c_str(),msg.size(),0);
                     __NewConnections.find(UserId)->second.setIsLogged(true);
                     __users[UserId] = __NewConnections.find(UserId)->second;
@@ -499,6 +499,7 @@ bool Server::run( void )
                             }
                             else
                             {
+                                CurrentBuffer = backslashR(CurrentBuffer);
                                 std::vector<std::pair<std::string, std::string> > cmds = ParceConnectionLine(CurrentBuffer);
                                 if(cmds.size() != 3)
                                     std::cout << "correct Form : Pass <password> \\n nick <nickname> \\n user <username>\n";
