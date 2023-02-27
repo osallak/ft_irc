@@ -32,6 +32,7 @@ class Server{
         std::map<std::string,Channel> __channels;
         std::map<int,Client>        __NewConnections;
         int                         __currentNdx;
+        std::string                 __hostname;
     public:
 
         Server();
@@ -39,6 +40,7 @@ class Server{
         Server(const Server &copy);
         Server &operator=(const Server &copy);
 
+        std::string            getHostname() const;
         unsigned short         getPort() const;
         void                   setPort(std::string port);
         std::string            getPassword() const;
