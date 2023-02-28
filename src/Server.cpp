@@ -183,7 +183,7 @@ int    Server::GetUserId(std::string UserName)
 {
     std::map<int, Client>::iterator it;
     for (it = __users.begin(); it != __users.end(); ++it) {
-        if(it->second.getUsername() == UserName)
+        if(it->second.getNickname() == UserName)
             return(it->first);
     }
     return -1;
@@ -533,9 +533,6 @@ void Server::disconnect( void )
 
 int Server::authentification( void )
 {
-    //authentification with the server, return 0 if success, 1 if not
-    // it receives the password from the client and compares it to the one in the server
-    // if it's the same, it returns 1, else it returns 0
     return (0);
 }
 
@@ -887,21 +884,22 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
 
 void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
 {
-    //consider that the command is already erased from the vector
+    std::string message = "";
     if (vec.size() == 0)
     {
-        std::cout << "ERR_NEEDMOREPARAMS(461)\n"; 
+         message = ":" + __users[fd].getNickname() + " 461 " + "PRIVMSG " + "Not enough parameters\n";
+         send(fd, message.c_str(), message.size(), 0);
         return ;
     }
-    if (vec.size() > MAXPARAMS)
+    if (vec.size() < 2)
     {
-        std::cout << "ERR_TOOMANYARGUMENTS(461)\n";// TODO: check if it's the right error code
+        message = ":" + __users[fd].getNickname() + " 412" + " PRIVMSG " + "No text to send\n";
+        send(fd, message.c_str(), message.size(), 0);
         return ;
     }
     
     std::string msg = "";
 
-    std::cout << "privmsg: "<<vec[1] << std::endl;
     if (vec[1][0] != ':')
         msg += ":";
     
@@ -929,29 +927,34 @@ void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
             std::map<std::string, Channel>::iterator it = __channels.find(targetsVec[i]);// search for channel in the map
 
             if ( it == __channels.end() ) {
-                std::cout << "ERR_NOSUCHCHANNEL(403)\n";
+                message = ":" + __users[fd].getNickname() + " 403 " + "PRIVMSG " + "No such channel\n";
+                send(fd, message.c_str(), message.size(), 0);
                 return;
             }
-            // TODO: check if the user is in the channel
             Channel channel = it->second;
             if (isInChannel(channel, fd) == false)
             {
-                std::cout << "ERR_CANNOTSENDTOCHAN(404)\n";
-                return;//TODO: continue or return?
+                message = ":" + __users[fd].getNickname() + " 404 " + "PRIVMSG " + "Cannot send to channel\n";
+                send(fd, message.c_str(), message.size(), 0);
+                return;
             }
             std::map<int, Client>::const_iterator it2 = channel.getChannelClients().begin();
             for (; it2 != channel.getChannelClients().end(); ++it2)
             {
-                std::cout << "MSG TO USER: " << it2->second.getUsername() << " " << msg << std::endl;
+                if (it2->first == fd)
+                    continue;
+                message = ":" + __users[fd].getNickname() + " PRIVMSG " + targetsVec[i] + " " + msg + "\n";
+                send(it2->first, message.c_str(), message.size(), 0);
             }
         } else {
-            int userId = GetUserId(targetsVec[i]);//TODO: implement getUserId
-            if (userId == -1)
-                std::cout << "ERR_NOSUCHNICK(401)\n";
+            int userId = GetUserId(targetsVec[i]);
+            if (userId == -1){
+                message = ":" + __users[fd].getNickname() + " 401 " + "PRIVMSG " + "No such nick\n";
+                send(fd, message.c_str(), message.size(), 0);
+            }
             else {
-                std::cout << "MSG TO USER: " << targetsVec[i] << " :" << msg << std::endl;
-                //TODO: send message to the user
-
+                message = ":" + __users[fd].getNickname() + " PRIVMSG " + targetsVec[i] + " " + msg + "\n";
+                send(userId, message.c_str(), message.size(), 0);
             }
         }
     }
@@ -969,50 +972,55 @@ bool    Server::isInChannel(Channel &channel, int fd) const
     return (false);
 }
 
-void    listAllUsers(std::map<int,Client> const &__users)
-{
-    std::map<int, Client>::const_iterator it = __users.begin();
-
-    std::cout << "USERS: " << std::endl;
-    for (; it != __users.end(); ++it)
-    {
-       std::cout << "\t" << it->second.getUsername() << std::endl; 
-    }
-}
 
 void    Server::parseNames(std::vector<std::string> &vec, int fd)
 {
     // std::cout << "NAMES\n" << std::endl;
+    std::string message;
     if (vec.size() == 0)
     {
-        listAllUsers(__users);
+        //list all users in the server
+        std::map<int, Client>::const_iterator it = __users.begin();
+        message = ":" + __users[fd].getNickname() + " 353 " + "NAMES " + "= " + "Users\n";
+        send(fd, message.c_str(), message.size(), 0);
+        for (; it != __users.end(); ++it)
+        {
+            message = ":" + __users[fd].getNickname() + " 353 " + "NAMES " + "= " + it->second.getUsername() + "\n";
+            send(fd, message.c_str(), message.size(), 0);
+        }
+        message = ":" + __users[fd].getNickname() + " 366 " + "NAMES " + "= " + "End of /NAMES list\n";
         return ;
     }
     if (vec.size() > MAXPARAMS)
     {
-        std::cout << "ERR_TOOMANYARGUMENTS(461)\n";// TODO: check if it's the right error code
+        message = ":" + __users[fd].getNickname() + " 461 " + "NAMES " + "Too many arguments\n";
+        send(fd, message.c_str(), message.size(), 0);
         return ;
     }
-    for (size_t i = 0; i < vec.size(); ++i)
+    std::vector<std::string> targetsVec = split(vec[0], ',');
+    for (size_t i = 0; i < targetsVec.size(); ++i)
     {
-        std::map<std::string, Channel>::iterator it = __channels.find(vec[i]);// search for channel in the map
+        std::map<std::string, Channel>::iterator it = __channels.find(targetsVec[i]);// search for channel in the map
 
         if (it == __channels.end()) {
-            std::cout << "ERR_NOSUCHCHANNEL(403)\n";
-            return ;//TODO: continue or return?
+            message = ":" + __users[fd].getNickname() + " 403 " + "NAMES " + "No such channel\n";
+            send(fd, message.c_str(), message.size(), 0);
+            return; 
         }
         
         Channel channel = it->second;
         if (isInChannel(channel, fd) == false)
         {
-            std::cout << "ERR_CANNOTSENDTOCHAN(404)\n";
+            message = ":" + __users[fd].getNickname() + " 404 " + "NAMES " + "Cannot send to channel\n";
+            send(fd, message.c_str(), message.size(), 0);
             return ;
         }
         std::map<int, Client>::const_iterator it2 = channel.getChannelClients().begin();
-        std::cout << "353 " << channel.getChannelName() << " :\n";
+        message = ":" + __users[fd].getNickname() + " 353 " + "NAMES " + "= " + channel.getChannelName() + "\n";
         for (; it2 != channel.getChannelClients().end(); ++it2)
         {
-            std::cout << "\t" << it2->second.getUsername() << "\n";
+            message = ":" + __users[fd].getNickname() + " 353 " + "NAMES " + "= " + it2->second.getUsername() + "\n";
+            send(fd, message.c_str(), message.size(), 0);
         }
     }
 }
