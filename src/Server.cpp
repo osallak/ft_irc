@@ -179,15 +179,16 @@ void Server::setPort(std::string port)
     this->__port = atoi(port.c_str());
 }
 
-int    Server::GetUserId(std::string UserName)
+int    Server::GetUserId(std::string nick)
 {
     std::map<int, Client>::iterator it;
     for (it = __users.begin(); it != __users.end(); ++it) {
-        if(it->second.getNickname() == UserName)
+        if(it->second.getNickname() == nick)
             return(it->first);
     }
     return -1;
 }
+
 void    Server::__ListChannelsUserInvTo(int UserId)
 {
     int __ValRead = 0;
@@ -211,6 +212,7 @@ void    Server::__ListChannelsUserInvTo(int UserId)
         }
     }
 }
+
 void Server::DeleteUser(int __UserId)
 {
     std::map<std::string,Channel>::iterator it = __channels.begin();
@@ -225,41 +227,50 @@ void Server::DeleteUser(int __UserId)
      std::cout << "Client disconnected" << std::endl;
      close(__pollfds[__currentNdx].fd);
      __pollfds.erase(__pollfds.begin() + __currentNdx);
-    //  close(__UserId);
-    // __pollfds.erase(__pollfds.begin() + i);
 }
-void Server::parseQuit(std::vector<std::string>__arg,int __UserId)
+void Server::parseNick(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
+    std::string message = "";
+    if(!__arg.size() || (__arg.size() == 1 && __arg[0] == ":"))
+    {
+        message = ":" + __users[__UserId].getNickname() + " 431 Nick :No nickname given\n"; 
+        __ValRead = send(__UserId,message.c_str(),message.size(), 0);
+    }
+    else if(__users.find(GetUserId(__arg[0])) != __users.end() && __arg[0] != __users[__UserId].getNickname())
+    {
+        __ValRead = send(__UserId,":NICK 433 * :NickName is already on server\n",44,0);
+    }
+    else
+    {
+        __users.find(__UserId)->second.setNickname(__arg[0]);
+    }
+    if(__ValRead == -1)
+        std::cout << "send() faild\n";
+}
+
+void Server::parseQuit(int __UserId)
+{
     DeleteUser(__UserId);
-    std::string msg = "Quit:";
-    for(size_t i = 0; i < __arg.size();i++)
-    {
-        if(i != 0)
-            msg+=" ";
-        msg+=__arg[i];
-    }
-    std::map<int, Client>::iterator it = __users.begin();
-    msg+="\n";
-    while(it != __users.end())
-    {
-        __ValRead = send(it->first,msg.c_str(),msg.size(), 0);
-        it++;
-    }
 }
 void Server::parsePart(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
     if(!__arg.size())
-        __ValRead = send(__UserId,"ERR_NEEDMOREPARAMS (461)\n",26, 0);
+        __ValRead = send(__UserId,":* 461 * :Not enough parameters\n",32, 0);
     std::vector<std::string>channels = split(__arg[0],',');
+    for(size_t i = 0 ; i < channels.size();i++)
+    {
+        std::cout << channels[i] << " ";
+    }
+    std::cout << std::endl;
     for(size_t i = 0; i < channels.size();i++)
     {
         if(__channels.find(channels[i]) == __channels.end())
-            __ValRead = send(__UserId,"ERR_NOSUCHCHANNEL (403)\n",25, 0);
+        __ValRead = send(__UserId,":* 403 * :No such channel\n",26, 0);
         else if(__channels.find(channels[i])->second.getChannelClients().find(__UserId) ==
              __channels.find(channels[i])->second.getChannelClients().end())
-            __ValRead = send(__UserId,"ERR_NOTONCHANNEL (442)\n",26, 0);
+            __ValRead = send(__UserId,":* 442 * :You're not on that channel\n",37, 0);
         else
             __channels[channels[i]].eraseClient(__UserId);
         if(__ValRead == -1)
@@ -271,46 +282,49 @@ void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
     if(!__arg.size())
+        __arg.push_back(":");
+    if(__arg.size() == 1 && __arg[0] == ":")
     {
-        __ListChannelsUserInvTo(__UserId);
+        if(send(__UserId,":* 404 * :No such nick name\n",28, 0) == -1)
+            std::cout << "send() failde\n";
         return;
     }
     int __ReceiverId = GetUserId(__arg[0]);
-      std::vector<int> vec = __channels.find(__arg[1])->second.getChannelModerator();
+    std::vector<int> vec = __channels.find(__arg[1])->second.getChannelModerator();
     if(__arg.size() == 1)
-        __ValRead = send(__UserId,"ERR_NOSUCHCHANNEL  (482)\n",26, 0);
-    else if(__ReceiverId == -1)
-        __ValRead = send(__UserId,"ERR_NOSUCHNICK (401)\n",22, 0);
+        __ValRead = send(__UserId,":* 403 * :No such channel\n",26, 0);
     else if(!__channels[__arg[1]].getClientNb())
-        __ValRead = send(__UserId,"ERR_NOSUCHCHANNEL  (482)\n",26, 0);
+        __ValRead = send(__UserId,":* 403 * :No such channel\n",26, 0);
+    else if(__ReceiverId == -1)
+        __ValRead = send(__UserId,":* 404 * :No such nick name\n",28, 0);
     else if(__channels[__arg[1]].getChannelClient(__users[__UserId].getUsername()) == -1)
-        __ValRead = send(__UserId,"ERR_NOSUCHCHANNEL  (482)\n",26, 0);
-    else if(__channels.find(__arg[1])->second.getChannelType() && std::find(vec.begin(),vec.end(),__UserId) != vec.end())
-        __ValRead = send(__UserId,"ERR_CHANOPRIVSNEEDED (482)\n",28, 0);
+        __ValRead = send(__UserId,":* 403 *:No such channel\n",28, 0);
+    else if(__channels.find(__arg[1])->second.getChannelType() && std::find(vec.begin(),vec.end(),__UserId) == vec.end())
+        __ValRead = send(__UserId,":* 482 * : You're not an operator on that channel\n",50, 0);
     else
     {
-        __ValRead = send(__UserId,"RPL_INVITING (341)\n",20, 0);
-        __channels[__arg[1]].SetInviteds(__ReceiverId, __users[__UserId]);
+        std::string msg = "";
+        msg=":* 341 * :" + __users[__UserId].getUsername() + " " + __arg[0] + " " + __arg[1] + '\n';
+        __ValRead = send(__UserId,msg.c_str(),msg.size(), 0);
+        __channels[__arg[1]].SetInviteds(__ReceiverId, __users[ __ReceiverId]);
     }
     if(__ValRead == - 1)
         std::cout << "send() failde\n";
-
 }
 
 void Server::parseTopic(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
-    std::cout << "im here\n";
     if(!__arg.size() || __arg.size() == 1)
     {
-            __ValRead = send(__UserId,"RPL_NOTOPIC (331)\n",19, 0);
+            __ValRead = send(__UserId,":* 403 * :No such channel\n",26, 0);
             return;
     }
     std::vector<int> vec = __channels.find(__arg[0])->second.getChannelModerator();
     if(__channels.find(__arg[0]) == __channels.end())
-        __ValRead = send(__UserId,"ERR_NOSUCHCHANNEL (403)\n",25, 0);
+        __ValRead = send(__UserId,":* 403 * :No such channel\n",26, 0);
     else if(__channels.find(__arg[0])->second.getChannelType() && std::find(vec.begin(),vec.end(),__UserId) != vec.end())
-        __ValRead = send(__UserId,"ERR_CHANOPRIVSNEEDED (482)\n",28, 0);
+        __ValRead = send(__UserId,":* 482 * You're not an operator on that channel\n",48, 0);
 
     else
     {
@@ -321,9 +335,8 @@ void Server::parseTopic(std::vector<std::string>__arg,int __UserId)
         while(BeginIt != EndIt)
         {
              __channels.find(__arg[0])->second.setChannelTopic(__arg[1]);
-            size_t len = __channels.find(__arg[0])->second.getChannelTopic().size();
-            __ValRead = send(BeginIt->first,__channels.find(__arg[0])->second.getChannelTopic().c_str(),len, 0);
-            __ValRead = send(BeginIt->first,"\n",1, 0);
+            std::string msg = ": TOPIC 332 :"+__channels.find(__arg[0])->second.getChannelName() + " " + __channels.find(__arg[0])->second.getChannelTopic() + "\n";
+            __ValRead = send(BeginIt->first,msg.c_str(),msg.size(),0);
             BeginIt++;
         }
     }
@@ -401,7 +414,6 @@ bool Server::run( void )
     // __spollfd.revents = 0;
     __pollfds.push_back(__spollfd);// add the server socket to the pollfds vector, to keep track of it
     
-    // int timeout = (1000 * 60 ); // 1 minute
     // infinite loop to keep the server running
 
     while (true)
@@ -445,12 +457,10 @@ bool Server::run( void )
                 __pollfds.push_back(__NewClient);
                 Client NewClient = Client();
                 __NewConnections[__NewClient.fd] = NewClient;
-                 // add the new client socket to the pollfds vector
                 
             }
-            else // if the event is on a client socket, it means the client sent a message
+            else 
             {
-                // TODO: check if the client is trying to log in or send a command, fugure out how to add it to clients vector
                 int valread;
                 char buffer[1024] = {0};
                 if ((valread = read(__pollfds[i].fd, buffer, 1024)) < 0)
@@ -462,8 +472,7 @@ bool Server::run( void )
                 {
                     std::cout << "Client disconnected" << std::endl;
                     close(__pollfds[i].fd);
-                    __pollfds.erase(__pollfds.begin() + i); // remove the client socket from the pollfds vector
-                                                            //TODO: remove the client from the clients vector
+                    __pollfds.erase(__pollfds.begin() + i);
                 }
                 else // this is just for testing, it should be parsed and executed
                 {
@@ -527,8 +536,7 @@ bool Server::run( void )
 
 void Server::disconnect( void )
 {
-    //disconnect from the server
-    // it should be called with the client to disconnect as a parameter (or something like that)
+    //TODO: remove this 
 }
 
 int Server::authentification( void )
@@ -572,7 +580,7 @@ void    Server::parseCommand( int fd )
     else if (command == TOPIC)
         parseTopic(res, fd);
     else if (command == QUIT)
-        parseQuit(res, fd);
+        parseQuit(fd);
     else if (command == PART)
         parsePart(res, fd);
     else if (command == NAMES)
@@ -585,6 +593,10 @@ void    Server::parseCommand( int fd )
         parseJoin(res, fd);
     else if (command == "/joke" || command == "/time" || command == "/bot")
         runBot(command, fd);
+    else {
+        std::string msg = "421 " + __users[fd].getNickname() + " " + command + " :Unknown command\n";
+        send(fd, msg.c_str(), msg.size(), 0);
+    }
 }
 
 std::vector<std::string>    Server::split(std::string &line, char c)
@@ -620,7 +632,6 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
         std::cout << "ERR_NEEDMOREPARAMS(461)\n";
         return ;
     }
-    // std::cout << "|" << vec[1] << "|" << std::endl;
     if (vec[0][0] != '#' || !vec[0][1])
     {
         std::cout << "Bad channel name\n";
@@ -932,15 +943,13 @@ void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
                 return;
             }
             Channel channel = it->second;
-            if (isInChannel(channel, fd) == false)
-            {
+            if (isInChannel(channel, fd) == false) {
                 message = ":" + __users[fd].getNickname() + " 404 " + "PRIVMSG " + "Cannot send to channel\n";
                 send(fd, message.c_str(), message.size(), 0);
                 return;
             }
             std::map<int, Client>::const_iterator it2 = channel.getChannelClients().begin();
-            for (; it2 != channel.getChannelClients().end(); ++it2)
-            {
+            for (; it2 != channel.getChannelClients().end(); ++it2) {
                 if (it2->first == fd)
                     continue;
                 message = ":" + __users[fd].getNickname() + " PRIVMSG " + targetsVec[i] + " " + msg + "\n";
@@ -951,8 +960,10 @@ void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
             if (userId == -1){
                 message = ":" + __users[fd].getNickname() + " 401 " + "PRIVMSG " + "No such nick\n";
                 send(fd, message.c_str(), message.size(), 0);
-            }
-            else {
+            } else if (userId == fd){
+                message = ":" + __users[fd].getNickname() + " 400 " + "PRIVMSG " + "Cannot send to yourself\n";
+                send(fd, message.c_str(), message.size(), 0);
+            } else {
                 message = ":" + __users[fd].getNickname() + " PRIVMSG " + targetsVec[i] + " " + msg + "\n";
                 send(userId, message.c_str(), message.size(), 0);
             }
@@ -975,11 +986,9 @@ bool    Server::isInChannel(Channel &channel, int fd) const
 
 void    Server::parseNames(std::vector<std::string> &vec, int fd)
 {
-    // std::cout << "NAMES\n" << std::endl;
     std::string message;
     if (vec.size() == 0)
     {
-        //list all users in the server
         std::map<int, Client>::const_iterator it = __users.begin();
         message = ":" + __users[fd].getNickname() + " 353 " + "NAMES " + "= " + "Users\n";
         send(fd, message.c_str(), message.size(), 0);
@@ -989,6 +998,7 @@ void    Server::parseNames(std::vector<std::string> &vec, int fd)
             send(fd, message.c_str(), message.size(), 0);
         }
         message = ":" + __users[fd].getNickname() + " 366 " + "NAMES " + "= " + "End of /NAMES list\n";
+        send(fd, message.c_str(), message.size(), 0);
         return ;
     }
     if (vec.size() > MAXPARAMS)
@@ -1000,7 +1010,7 @@ void    Server::parseNames(std::vector<std::string> &vec, int fd)
     std::vector<std::string> targetsVec = split(vec[0], ',');
     for (size_t i = 0; i < targetsVec.size(); ++i)
     {
-        std::map<std::string, Channel>::iterator it = __channels.find(targetsVec[i]);// search for channel in the map
+        std::map<std::string, Channel>::iterator it = __channels.find(targetsVec[i]);
 
         if (it == __channels.end()) {
             message = ":" + __users[fd].getNickname() + " 403 " + "NAMES " + "No such channel\n";
@@ -1017,6 +1027,7 @@ void    Server::parseNames(std::vector<std::string> &vec, int fd)
         }
         std::map<int, Client>::const_iterator it2 = channel.getChannelClients().begin();
         message = ":" + __users[fd].getNickname() + " 353 " + "NAMES " + "= " + channel.getChannelName() + "\n";
+        send(fd, message.c_str(), message.size(), 0);
         for (; it2 != channel.getChannelClients().end(); ++it2)
         {
             message = ":" + __users[fd].getNickname() + " 353 " + "NAMES " + "= " + it2->second.getUsername() + "\n";
@@ -1028,84 +1039,99 @@ void    Server::parseNames(std::vector<std::string> &vec, int fd)
 
 void    Server::parseList(std::vector<std::string> &vec, int fd)
 {
+    std::string message;
     if (vec.size() > MAXPARAMS)
     {
-        std::cout << "ERR_TOOMANYARGUMENTS(461)\n";// TODO: check if it's the right error code
+        message = ":" + __users[fd].getNickname() + " 461 " + "LIST " + "Too many arguments\n";
+        send(fd, message.c_str(), message.size(), 0);
         return ;
     }
     if (vec.size() == 0)
     {
         std::map<std::string, Channel>::iterator it = __channels.begin();
-        std::cout << "321 " << "Channel :Users Name" << std::endl;
+        message = ":" + __users[fd].getNickname() + " 321 " + "LIST " + "Channel :Users Name\n";
+        send(fd, message.c_str(), message.size(), 0);
         for (; it != __channels.end(); ++it)
         {
             if (it->second.getChannelType() == 1 && !isInChannel(it->second, fd))
                 continue;
-            std::cout << "322 " << it->second.getChannelName() << " " << it->second.getChannelClients().size() << " :" << it->second.getChannelTopic() << std::endl;
+            message = ":" + __users[fd].getNickname() + " 322 " + it->second.getChannelName() + " " + std::to_string(it->second.getChannelClients().size()) + " :" + it->second.getChannelTopic() + "\n";
+            send(fd, message.c_str(), message.size(), 0);
         }
-        std::cout << "323 " << "End of /LIST" << std::endl;
+        send(fd, "323 End of /LIST\n", 18, 0);
         return ;
     }
     
     std::vector<std::string> chns = split(vec[0], ',');
 
     for (size_t i = 0; i < chns.size(); ++i) {
-        std::map<std::string, Channel>::iterator it = __channels.find(chns[i]);// search for channel in the map
+        std::map<std::string, Channel>::iterator it = __channels.find(chns[i]);
 
         if (it == __channels.end()) {
-            std::cout << "ERR_NOSUCHCHANNEL(403)\n";
-            return ;//TODO: continue or return?
+            message = ":" + __users[fd].getNickname() + " 403 " + "LIST " + "No such channel\n";
+            send(fd, message.c_str(), message.size(), 0);
+            return ;
         }
         
         Channel channel = it->second;
         if (channel.getChannelType() == 1 && isInChannel(channel, fd) == false)
         {
-            std::cout << "ERR_CANNOTSENDTOCHAN(404)\n";
+            message = ":" + __users[fd].getNickname() + " 404 " + "LIST " + "Cannot send to channel\n";
+            send(fd, message.c_str(), message.size(), 0);
             return ;
         }
-        std::cout << "322 " << channel.getChannelName() << " " << channel.getChannelClients().size() << " :" << channel.getChannelTopic() << std::endl;
+        message = ":" + __users[fd].getNickname() + " 322 " + channel.getChannelName() + " " + std::to_string(channel.getChannelClients().size()) + " :" + channel.getChannelTopic() + "\n";
+        send(fd, message.c_str(), message.size(), 0);
     }
 }
 
 void    Server::parseKick(std::vector<std::string> &vec, int fd)
 {
+    std::string message;
+
     if (vec.size() == 0) {
-        std::cout << "ERR_NEEDMOREPARAMS(461)\n";
+        message = ":" + __users[fd].getNickname() + " 461 " + "KICK " + "Not enough parameters\n";
+        send(fd, message.c_str(), message.size(), 0);
         return ;
-    } else if (vec.size() > 2){
-        std::cout << "ERR_TOOMANYARGUMENTS(461)\n";
+    } else if (vec.size() > 3){
+        message = ":" + __users[fd].getNickname() + " 461 " + "KICK " + "Too many parameters\n";
+        send(fd, message.c_str(), message.size(), 0);
         return ;
     }
     std::map<std::string, Channel>::iterator it = __channels.find(vec[0]);
     if (it == __channels.end()) {
-        std::cout << "ERR_NOSUCHCHANNEL(403)\n";
+        message = ":" + __users[fd].getNickname() + " 403 " + "KICK " + "No such channel\n";
+        send(fd, message.c_str(), message.size(), 0);
         return ;
     }
     Channel channel = it->second;
     if (!isInChannel(channel, fd))
     {
-        std::cout << "ERR_NOTONCHANNEL (442)\n";
+        message = ":" + __users[fd].getNickname() + " 442 " + "KICK " + "You're not on that channel\n";
+        send(fd, message.c_str(), message.size(), 0);
         return ;
     }
 
     std::vector<int>::iterator it3 = std::find(channel.getChannelModerator().begin(), channel.getChannelModerator().end(), fd);
     if (it3 == channel.getChannelModerator().end())
     {
-        std::cout << "ERR_CHANOPRIVSNEEDED(482)\n";
+        message = ":" + __users[fd].getNickname() + " 482 " + "KICK " + "You're not a channel operator\n";
+        send(fd, message.c_str(), message.size(), 0);
         return ;
     }
     std::map<int, Client>::const_iterator it2 = channel.getChannelClients().begin();
     for (; it2 != channel.getChannelClients().end(); ++it2)
     {
-        if (it2->second.getUsername() == vec[1])
+        if (it2->second.getNickname() == vec[1] && it2->first != fd)
         {
-            std::cout << "KICK " << channel.getChannelName() << " " << vec[1] << " :" << "Kicked by " << __users[fd].getUsername() << std::endl;
+            message = ":" + __users[fd].getNickname() + " KICK " + channel.getChannelName() + " " + vec[1] + " :" + "Kicked by " + __users[fd].getUsername() + "\n";
+            send(it2->first, message.c_str(), message.size(), 0);
             channel.eraseClient(it2->first);
-            // channel.eraseModerator(it2->first);
             return ;
         }
     }
-    std::cout << "ERR_USERNOTINCHANNEL(441)\n";
+    message = ":" + __users[fd].getNickname() + " 441 " + "KICK " + "They aren't on that channel\n";
+    send(fd, message.c_str(), message.size(), 0);
 }
 
 void    insertJokes(std::vector<std::string>& jokes)

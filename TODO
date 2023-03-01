@@ -1,6 +1,0 @@
-- fix privmsg segfault when you pass only the target and the message is empty : DONE
-- figure out how to find users using nickname not username : on it
-
-
-changes :
-        - getUserId method now searchs by nickname not username

@@ -67,11 +67,12 @@ class Server{
         void                   __ListChannelsUserInvTo(int UserId);
         void                    parseTopic(std::vector<std::string>__arg,int __UserId);
         void                    parsePart(std::vector<std::string>__arg,int __UserId);
-        void                    parseQuit(std::vector<std::string>__arg,int __UserId);
+        void                    parseQuit(int __UserId);
         void                    DeleteUser(int __Userid);
         void                    parseNames(std::vector<std::string> &, int fd);
         void                    parseList(std::vector<std::string> &, int fd);
         void                    runBot(const std::string& ,int);
+        void                    parseNick(std::vector<std::string> , int fd);
 };
 
 
