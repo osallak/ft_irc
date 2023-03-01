@@ -73,6 +73,10 @@ class Server{
         void                    parseList(std::vector<std::string> &, int fd);
         void                    runBot(const std::string& ,int);
         void                    parseNick(std::vector<std::string> , int fd);
+        std::string             GetUserName(int fd);
+        void                    send_msg(int fd, std::string msg);
+        int                     IsModerator(Channel &channel, std::string username);
+        void                    RemoveModerator(Channel &channel, std::string username);
 };
 
 

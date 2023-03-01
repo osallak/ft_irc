@@ -222,11 +222,11 @@ void Server::DeleteUser(int __UserId)
         it->second.eraseInvited(__UserId);
         it++;
     }
-    __users.erase(__UserId);
-    __NewConnections.erase(__UserId);
-     std::cout << "Client disconnected" << std::endl;
+    if(__users.find(__UserId) != __users.end())
+        __users.erase(__UserId);
+    if(__NewConnections.find(__UserId) != __NewConnections.end())
+        __NewConnections.erase(__UserId);
      close(__pollfds[__currentNdx].fd);
-     __pollfds.erase(__pollfds.begin() + __currentNdx);
 }
 void Server::parseNick(std::vector<std::string>__arg,int __UserId)
 {
@@ -471,8 +471,7 @@ bool Server::run( void )
                 if (valread == 0) // if the client disconnected
                 {
                     std::cout << "Client disconnected" << std::endl;
-                    close(__pollfds[i].fd);
-                    __pollfds.erase(__pollfds.begin() + i);
+                    DeleteUser(__pollfds[i].fd);
                 }
                 else // this is just for testing, it should be parsed and executed
                 {
@@ -622,23 +621,18 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
     std::map<std::string,Channel>::iterator     it;
     std::map<int,Client>::iterator              inv;
     std::string                                 str;
+    std::string                                 message;
     size_t                                      i;
-    // size_t                                      j;
     size_t                                      k;
 
     k = 0;
-    if (vec.size() == 0)
+    if (vec.size() == 0 || vec[0][0] != '#' || (vec[0][0] == '#' && vec[0].size() == 1))
     {
-        std::cout << "ERR_NEEDMOREPARAMS(461)\n";
-        return ;
-    }
-    if (vec[0][0] != '#' || !vec[0][1])
-    {
-        std::cout << "Bad channel name\n";
+        message = ":" + GetUserName(fd) + " 461 JOIN :Not enough parameters\n";
+        send_msg(fd, message);
         return ;
     }
     chn = split(vec[0], ',');
-    std::cout << "size : " << chn.size() << std::endl;
     if (vec.size() == 2)
         key = split(vec[1], ',');
     //check if channels exist
@@ -646,12 +640,11 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
     {
         while (1)
         {
-            puts("here1");
             it = __channels.find(chn[i]);
             if (it == __channels.end())
             {
                 __channels[chn[i]].setChannelName(chn[i]);
-                __channels[chn[i]].setChannelTopic("");
+                __channels[chn[i]].setChannelTopic("No topic");
                 __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
                 __channels[chn[i]].setChannelModerator(fd);
                 __channels[chn[i]].setChannelType(0);
@@ -659,47 +652,76 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                 __channels[chn[i]].setChannelPassword("");
                 if (vec.size() == 2 && key.size() > i)
                 {
+
+                    __channels[chn[i]].setChannelType(1);
                     __channels[chn[i]].setChannelPass(1);
                     __channels[chn[i]].setChannelPassword(key[i]);
                 }
-                std::cout << "Channel " << chn[i] << " created succesfully\n";
+                message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
+                send_msg(fd, message);
                 break ;
             }
             //if user already exist
             if (it->second.getChannelClientt(fd) == 1)
             {
-                std::cout << "User already exist in the channel " << chn[i] << "\n";
+                message = ":" + GetUserName(fd) + " 443 * :You are already in this channel\n";
+                send_msg(fd, message);
                 break ;
             }
             //check if it's private
             if (it->second.getChannelType() == 1)
             {
-                if (it->second.getChannelInvited().empty())
+                // std::map<int,Client>z = it->second.getChannelInvited();
+                // for(std::map<int,Client>::iterator zob = z.begin() ;zob != z.end();zob++)
+                // {
+                //     std::cout << zob->first << std::endl;
+                // }
+                if (it->second.getChannelInvited().empty() && vec.size() != 2)
                 {
-                    std::cout << "ERR_INVITEONLYCHAN(473)\n";
+                    message = ":" + GetUserName(fd) + " 473 * Cannot join channel (+i)\n";
+                    send_msg(fd, message);
                     break ;
                 }
                 inv = it->second.getChannelInvited().find(fd);
-                if (inv == it->second.getChannelInvited().end())
+                if (inv != it->second.getChannelInvited().end() && vec.size() != 2)
                 {
-                    std::cout << "ERR_INVITEONLYCHAN(473)\n";
+                    __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+                    message = ":" + GetUserName(fd) + " JOIN " + chn[i] + "\n";
+                    send_msg(fd, message);
+                    // std::cout << GetUserName(fd) << " joined to the channel "<< chn[i] << "\n";
                     break ;
                 }
-                std::cout << inv->second.getUsername() << std::endl;
-                break ;
+                // if (inv == it->second.getChannelInvited().end())
+                // {
+                //     message = ":" + GetUserName(fd) + " 473 * Cannot join channel (+i)\n";
+                //     send_msg(fd, message);
+                //     std::cout << "ERR_INVITEONLYCHAN(473)\n";
+                //     break ;
+                // }
+                // std::cout << inv->second.getUsername() << std::endl;
+                // break ;
                 if (it->second.getChannelPass() == 1)
                 {
                     if (it->second.getChannelPassword() != key[k++])
                     {
-                        std::cout << "ERR_BADCHANNELKEY(475)\n";
+                        message = ":" + GetUserName(fd) + " 475 * Cannot join channel (+k)\n";
+                        send_msg(fd, message);
                         break ;
                     }
                     else
                     {
                         __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
-                        std::cout << "Joined to the channel "<< chn[i] << "\n";
+                        message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
+                        send_msg(fd, message);
                         break ;
                     }
+                }
+                else
+                {
+                    __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+                    message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
+                    send_msg(fd, message);
+                    break ;
                 }
             }
             else
@@ -708,13 +730,16 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                 {
                     if (key.size() <= i || it->second.getChannelPassword() != key[k++])
                     {
-                        std::cout << "ERR_BADCHANNELKEY(475)\n";
+                        message = ":" + GetUserName(fd) + " 475 * Cannot join channel (+k)\n";
+                        send_msg(fd, message);
+                        // std::cout << "ERR_BADCHANNELKEY(475)\n";
                         break ;
                     }
                     else
                     {
                         __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
-                        std::cout << "Joined to the channel "<< chn[i] << "\n";
+                        message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
+                        send_msg(fd, message);
                         break ;
                     }
                 }
@@ -722,11 +747,13 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                 {
                     if (it->second.getChannelClientt(fd) == 1)
                     {
-                        std::cout << "User already exist in the channel " << chn[i] << "\n";
+                        message = ":" + GetUserName(fd) + " 443 * :You are already in this channel\n";
+                        send_msg(fd, message);
                         break ;
                     }
                     __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
-                    std::cout << "Joined to the channel "<< chn[i] << "\n";
+                    message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
+                    send_msg(fd, message);
                     break ;
                 }
             }
@@ -738,12 +765,14 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
 {
     std::map<std::string,Channel>::iterator  it;
     std::vector<int>                         v;
+    std::string                              message;
     std::vector<int>                         v_cl;
     int                                      i;
 
     if (vec.size() == 0)
     {
-        std::cout << "ERR_NEEDMOREPARAMS(461)\n";
+        message = ":" + GetUserName(fd) + " 461 * :Not enough parameters\n";
+        send_msg(fd, message);
         return ;
     }
     //channels mode
@@ -751,13 +780,16 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
     it = __channels.find(vec[0]);
     if (it == __channels.end())
     {
-        std::cout << "ERR_NOSUCHCHANNEL(403)\n";
+        message = ":" + GetUserName(fd) + " 403 * :No such channel\n";
+        send_msg(fd, message);
+        // std::cout << "ERR_NOSUCHCHANNEL(403)\n";
         return ;
     }
     //channel without mode
     if (vec.size() == 1)
     {
-        std::cout << "RPL_CHANNELMODEIS(324)\n";
+        message = ":" + GetUserName(fd) + " 324 * :Not enough parameters\n";
+        send_msg(fd, message);
         return ;
     }
     //channel with modes
@@ -776,30 +808,40 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                 {
                     if (it->second.getChannelType() == 1)
                     {
-                        std::cout << "channel " << it->second.getChannelName() << " is already private\n";
+                        message = ":" + GetUserName(fd) + " 342 * :Channel is already private\n";
+                        send_msg(fd, message);
+                        // std::cout << "channel " << it->second.getChannelName() << " is already private\n";
                         return ;
                     }
                     it->second.setChannelType(1);
-                    std::cout << "channel " << it->second.getChannelName() << " is private now\n";
+                    message = ":" + GetUserName(fd) + " 342 * :Channel is private now\n";
+                    send_msg(fd, message);
+                    // std::cout << "channel " << it->second.getChannelName() << " is private now\n";
                     return ;
                 }
                 if (vec[1][1] == 'k')
                 {
                     if (i != -1)
                     {
-                        std::cout << "error\n";
+                        message = ":" + GetUserName(fd) + " 401 * :No such nick/channel\n";
+                        send_msg(fd, message);
+                        // std::cout << "ERR_NOSUCHNICK(401)\n";
                         return ;
                     }
                     if (vec.size() == 3)
                     {
                         it->second.setChannelPass(1);
                         it->second.setChannelPassword(vec[2]);
-                        std::cout << "We have set the password\n";
+                        message = ":" + GetUserName(fd) + " 400 * :We have set the password\n";
+                        send_msg(fd, message);
+                        // std::cout << "We have set the password\n";
                         return ;
                     }
                     else
                     {
-                        std::cout << "ERR_INVALIDMODEPARAM(696)\n";
+                        message = ":" + GetUserName(fd) + " 696 * :Invalid mode params\n";
+                        send_msg(fd, message);
+                        // std::cout << "ERR_INVALIDMODEPARAM(696)\n";
                         return ;
                     }
                 }
@@ -809,15 +851,33 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                     {
                         if (i != -1)
                         {
+                            if (IsModerator(it->second, vec[2]) == 1)
+                            {
+                                message = ":" + GetUserName(fd) + " 400 * :" + "The user " + vec[2] + " is already a moderator\n";
+                                send_msg(fd, message);
+                                // std::cout << "The user " << vec[2] << " is already a moderator\n";
+                                return ;
+                            }
                             it->second.setChannelModerator(i);
-                            std::cout << "User with fd " << i << " is a moderator now\n";
+                            message = ":" + GetUserName(fd) + " 400 * :" + "The user " + vec[2] + " is a moderator now\n";
+                            send_msg(fd, message);
+                            // std::cout << "The user " << vec[2] << " is a moderator now\n";
                             return ;
                         }
                         else
                         {
-                            std::cout << "User with fd " << i << " is not a member of channel\n";
+                            message = ":" + GetUserName(fd) + " 400 * :" + "The user " + vec[2] + " is not a member of channel\n";
+                            send_msg(fd, message);
+                            // std::cout << "The user " << vec[2] << " is not a member of channel\n";
                             return ;
                         }
+                    }
+                    else
+                    {
+                        message = ":" + GetUserName(fd) + " 696 * :Invalid mode params\n";
+                        send_msg(fd, message);
+                        // std::cout << "ERR_INVALIDMODEPARAM(696)\n";
+                        return ;
                     }
                 }
                 // if (vec[1][1] == '')
@@ -828,11 +888,15 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                 {
                     if (it->second.getChannelType() == 0)
                     {
-                        std::cout << "channel " << it->second.getChannelName() << " is already public\n";
+                        message = ":" + GetUserName(fd) + " 400 * :" + "channel " + it->second.getChannelName() + " is already public\n";
+                        send_msg(fd, message);
+                        // std::cout << "channel " << it->second.getChannelName() << " is already public\n";
                         return ;
                     }
                     it->second.setChannelType(0);
-                    std::cout << "channel " << it->second.getChannelName() << " is public now\n";
+                    message = ":" + GetUserName(fd) + " 400 * :" + "channel " + it->second.getChannelName() + " is public now\n";
+                    send_msg(fd, message);
+                    // std::cout << "channel " << it->second.getChannelName() << " is public now\n";
                     return ;
                 }
                 if (vec[1][1] == 'k' && i != -1)
@@ -841,12 +905,16 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                     {
                         it->second.setChannelPass(0);
                         it->second.setChannelPassword("");
-                        std::cout << "The channel " << it->second.getChannelName() << " is without password now\n";
+                        message = ":" + GetUserName(fd) + " 400 * :" + "channel " + it->second.getChannelName() + " is without password now\n";
+                        send_msg(fd, message);
+                        // std::cout << "The channel " << it->second.getChannelName() << " is without password now\n";
                         return ;
                     }
                     else
                     {
-                        std::cout << "ERR_INVALIDMODEPARAM(696)\n";
+                        message = ":" + GetUserName(fd) + " 696 * :Invalid mode params\n";
+                        send_msg(fd, message);
+                        // std::cout << "ERR_INVALIDMODEPARAM(696)\n";
                         return ;
                     }
                 }
@@ -857,40 +925,98 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                         i = it->second.getChannelClient(vec[2]);
                         if (i != -1)
                         {
-                            v_cl = it->second.getChannelModerator();
-                            std::vector<int>::const_iterator it = std::find(v_cl.begin(), v_cl.end(), fd);
-                            if (it != v_cl.end())
+                            if (GetUserId(vec[2]) == fd)
                             {
-                                v_cl.erase(it);
-                                std::cout << "User with fd " << fd << " is no longer a moderator now\n";
+                                message = ":" + GetUserName(fd) + " 400 * :You can't remove yourself from moderators\n";
+                                send_msg(fd, message);
+                                // std::cout << "You can't remove yourself from moderators\n";
+                                return ;
+                            }
+                            v_cl = it->second.getChannelModerator();
+                            if (IsModerator(it->second, GetUserName(fd)))
+                            {
+                                RemoveModerator(it->second, vec[2]);
+                                message = ":" + GetUserName(fd) + " 400 * :" + "The user " + vec[2] + " is no longer a moderator now\n";
+                                send_msg(fd, message);
+                                // std::cout << "The user " << vec[2] << " is no longer a moderator now\n";
                                 return ;
                             }
                             else
                             {
-                                std::cout << "User with fd " << i << " is not a moderator of channel\n";
+                                message = ":" + GetUserName(fd) + " 482 * :" + "The user " + vec[2] + " is not a moderator of channel\n";
+                                send_msg(fd, message);
+                                // std::cout << "The user " << vec[2] << " is not a moderator of channel\n";
                                 return ;
                             }
                         }
                         else
                         {
-                            std::cout << "User with fd " << i << " is not a member of channel\n";
+                            message = ":" + GetUserName(fd) + " 441 * :" + "The user " + vec[2] + " is not a member of channel\n";
+                            send_msg(fd, message);
+                            // std::cout << "The user " << vec[2] << " is not a member of channel\n";
                             return ;
                         }
+                    }
+                    else
+                    {
+                        message = ":" + GetUserName(fd) + " 696 * :Invalid mode params\n";
+                        send_msg(fd, message);
+                        // std::cout << "ERR_INVALIDMODEPARAM(696)\n";
+                        return ;
                     }
                 }
             }
             else
             {
-                std::cout << "RPL_CHANNELMODEIS(324)\n";
+                message = ":" + GetUserName(fd) + " 324 * :You have set a mode of channel\n";
+                send_msg(fd, message);
+                // std::cout << "RPL_CHANNELMODEIS(324)\n";
                 return ;
             }
         }
         else
         {
-            std::cout << "ERR_CHANOPRIVSNEEDED(482)\n";
+            message = ":" + GetUserName(fd) + " 482 * :" + "The user " + vec[2] + " is not a moderator of channel\n";
+            send_msg(fd, message);
+            // std::cout << "ERR_CHANOPRIVSNEEDED(482)\n";
             return ;
         }
     }
+}
+
+void    Server::send_msg(int fd, std::string msg)
+{
+    send(fd, msg.c_str(), msg.size(), 0);
+}
+
+std::string            Server::GetUserName(int fd)
+{
+    std::map<int, Client>::iterator it;
+    std::string                     message;
+    it = __users.find(fd);
+    if (it != __users.end())
+    {
+        return (it->second.getNickname());
+    }
+    message = ":" + GetUserName(fd) + " 401 * :No such nick/channel\n";
+    send_msg(fd, message);
+    return ("EROOR");
+}
+
+int                    Server::IsModerator(Channel &channel, std::string username)
+{
+    std::vector<int>::iterator                  it_vec;
+
+    if (std::find(channel.getChannelModerator().begin(), channel.getChannelModerator().end(), GetUserId(username)) != channel.getChannelModerator().end())
+        return (1);
+    return (-1);
+}
+
+void                    Server::RemoveModerator(Channel &channel, std::string username)
+{
+    std::vector<int>::const_iterator it = std::find(channel.getChannelModerator().begin(), channel.getChannelModerator().end(), GetUserId(username));
+    if (it != channel.getChannelModerator().end())
+        channel.getChannelModerator().erase(it);
 }
 
 void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
