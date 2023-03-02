@@ -118,7 +118,7 @@ int Channel::getChannelClient(std::string __UserName) const
 {
     std::map<int, Client>::const_iterator it;
     for (it = BigenIterator(); it != EndIterator(); ++it) {
-        if(it->second.getUsername() == __UserName)
+        if(it->second.getNickname() == __UserName)
             return(it->first);
     }
     return(-1);
@@ -135,7 +135,7 @@ int Channel::getChannelClientt(int fd) const
 
 void Channel::setChannelClients(int __UserId , std::string __UserName)
 {
-    __channelClients[__UserId].setUsername(__UserName);
+    __channelClients[__UserId].setNickname(__UserName);
 }
 
 void Channel::setChannelPass(const int& channelPass)
