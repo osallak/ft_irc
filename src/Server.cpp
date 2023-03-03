@@ -782,7 +782,6 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
     {
         message = ":" + GetUserName(fd) + " 403 * :No such channel\n";
         send_msg(fd, message);
-        // std::cout << "ERR_NOSUCHCHANNEL(403)\n";
         return ;
     }
     //channel without mode
@@ -810,13 +809,11 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                     {
                         message = ":" + GetUserName(fd) + " 342 * :Channel is already private\n";
                         send_msg(fd, message);
-                        // std::cout << "channel " << it->second.getChannelName() << " is already private\n";
                         return ;
                     }
                     it->second.setChannelType(1);
                     message = ":" + GetUserName(fd) + " 342 * :Channel is private now\n";
                     send_msg(fd, message);
-                    // std::cout << "channel " << it->second.getChannelName() << " is private now\n";
                     return ;
                 }
                 if (vec[1][1] == 'k')
@@ -825,7 +822,6 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                     {
                         message = ":" + GetUserName(fd) + " 401 * :No such nick/channel\n";
                         send_msg(fd, message);
-                        // std::cout << "ERR_NOSUCHNICK(401)\n";
                         return ;
                     }
                     if (vec.size() == 3)
@@ -834,14 +830,12 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                         it->second.setChannelPassword(vec[2]);
                         message = ":" + GetUserName(fd) + " 400 * :We have set the password\n";
                         send_msg(fd, message);
-                        // std::cout << "We have set the password\n";
                         return ;
                     }
                     else
                     {
                         message = ":" + GetUserName(fd) + " 696 * :Invalid mode params\n";
                         send_msg(fd, message);
-                        // std::cout << "ERR_INVALIDMODEPARAM(696)\n";
                         return ;
                     }
                 }
@@ -855,20 +849,17 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                             {
                                 message = ":" + GetUserName(fd) + " 400 * :" + "The user " + vec[2] + " is already a moderator\n";
                                 send_msg(fd, message);
-                                // std::cout << "The user " << vec[2] << " is already a moderator\n";
                                 return ;
                             }
                             it->second.setChannelModerator(i);
                             message = ":" + GetUserName(fd) + " 400 * :" + "The user " + vec[2] + " is a moderator now\n";
                             send_msg(fd, message);
-                            // std::cout << "The user " << vec[2] << " is a moderator now\n";
                             return ;
                         }
                         else
                         {
                             message = ":" + GetUserName(fd) + " 400 * :" + "The user " + vec[2] + " is not a member of channel\n";
                             send_msg(fd, message);
-                            // std::cout << "The user " << vec[2] << " is not a member of channel\n";
                             return ;
                         }
                     }
@@ -876,7 +867,6 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                     {
                         message = ":" + GetUserName(fd) + " 696 * :Invalid mode params\n";
                         send_msg(fd, message);
-                        // std::cout << "ERR_INVALIDMODEPARAM(696)\n";
                         return ;
                     }
                 }
@@ -890,13 +880,11 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                     {
                         message = ":" + GetUserName(fd) + " 400 * :" + "channel " + it->second.getChannelName() + " is already public\n";
                         send_msg(fd, message);
-                        // std::cout << "channel " << it->second.getChannelName() << " is already public\n";
                         return ;
                     }
                     it->second.setChannelType(0);
                     message = ":" + GetUserName(fd) + " 400 * :" + "channel " + it->second.getChannelName() + " is public now\n";
                     send_msg(fd, message);
-                    // std::cout << "channel " << it->second.getChannelName() << " is public now\n";
                     return ;
                 }
                 if (vec[1][1] == 'k' && i != -1)
@@ -907,14 +895,12 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                         it->second.setChannelPassword("");
                         message = ":" + GetUserName(fd) + " 400 * :" + "channel " + it->second.getChannelName() + " is without password now\n";
                         send_msg(fd, message);
-                        // std::cout << "The channel " << it->second.getChannelName() << " is without password now\n";
                         return ;
                     }
                     else
                     {
                         message = ":" + GetUserName(fd) + " 696 * :Invalid mode params\n";
                         send_msg(fd, message);
-                        // std::cout << "ERR_INVALIDMODEPARAM(696)\n";
                         return ;
                     }
                 }
@@ -929,7 +915,6 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                             {
                                 message = ":" + GetUserName(fd) + " 400 * :You can't remove yourself from moderators\n";
                                 send_msg(fd, message);
-                                // std::cout << "You can't remove yourself from moderators\n";
                                 return ;
                             }
                             v_cl = it->second.getChannelModerator();
@@ -938,14 +923,12 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                                 RemoveModerator(it->second, vec[2]);
                                 message = ":" + GetUserName(fd) + " 400 * :" + "The user " + vec[2] + " is no longer a moderator now\n";
                                 send_msg(fd, message);
-                                // std::cout << "The user " << vec[2] << " is no longer a moderator now\n";
                                 return ;
                             }
                             else
                             {
                                 message = ":" + GetUserName(fd) + " 482 * :" + "The user " + vec[2] + " is not a moderator of channel\n";
                                 send_msg(fd, message);
-                                // std::cout << "The user " << vec[2] << " is not a moderator of channel\n";
                                 return ;
                             }
                         }
@@ -953,7 +936,6 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                         {
                             message = ":" + GetUserName(fd) + " 441 * :" + "The user " + vec[2] + " is not a member of channel\n";
                             send_msg(fd, message);
-                            // std::cout << "The user " << vec[2] << " is not a member of channel\n";
                             return ;
                         }
                     }
@@ -961,7 +943,6 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                     {
                         message = ":" + GetUserName(fd) + " 696 * :Invalid mode params\n";
                         send_msg(fd, message);
-                        // std::cout << "ERR_INVALIDMODEPARAM(696)\n";
                         return ;
                     }
                 }
@@ -970,7 +951,6 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
             {
                 message = ":" + GetUserName(fd) + " 324 * :You have set a mode of channel\n";
                 send_msg(fd, message);
-                // std::cout << "RPL_CHANNELMODEIS(324)\n";
                 return ;
             }
         }
@@ -978,7 +958,6 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
         {
             message = ":" + GetUserName(fd) + " 482 * :" + "The user " + vec[2] + " is not a moderator of channel\n";
             send_msg(fd, message);
-            // std::cout << "ERR_CHANOPRIVSNEEDED(482)\n";
             return ;
         }
     }
@@ -1248,14 +1227,16 @@ void    Server::parseKick(std::vector<std::string> &vec, int fd)
     std::map<int, Client>::const_iterator it2 = channel.getChannelClients().begin();
     for (; it2 != channel.getChannelClients().end(); ++it2)
     {
+        std::cout << "{" << it2->second.getNickname() << "}" << std::endl;
         if (it2->second.getNickname() == vec[1] && it2->first != fd)
         {
-            message = ":" + __users[fd].getNickname() + " KICK " + channel.getChannelName() + " " + vec[1] + " :" + "Kicked by " + __users[fd].getUsername() + "\n";
+            message = ":" + __users[fd].getNickname() + " KICK " + channel.getChannelName() + " " + vec[1] + " :" + "Kicked by " + __users[fd].getNickname() + "\n";
             send(it2->first, message.c_str(), message.size(), 0);
             channel.eraseClient(it2->first);
             return ;
         }
     }
+    std::cout << "|" << vec[1] << "|" << std::endl;
     message = ":" + __users[fd].getNickname() + " 441 " + "KICK " + "They aren't on that channel\n";
     send(fd, message.c_str(), message.size(), 0);
 }
