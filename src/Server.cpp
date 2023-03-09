@@ -676,15 +676,6 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                     // std::cout << GetUserName(fd) << " joined to the channel "<< chn[i] << "\n";
                     break ;
                 }
-                // if (inv == it->second.getChannelInvited().end())
-                // {
-                //     message = ":" + GetUserName(fd) + " 473 * Cannot join channel (+i)\n";
-                //     send_msg(fd, message);
-                //     std::cout << "ERR_INVITEONLYCHAN(473)\n";
-                //     break ;
-                // }
-                // std::cout << inv->second.getUsername() << std::endl;
-                // break ;
                 if (it->second.getChannelPass() == 1)
                 {
                     if (it->second.getChannelPassword() != key[k++])
