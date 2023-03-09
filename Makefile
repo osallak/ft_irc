@@ -1,25 +1,38 @@
-SRC = src/main.cpp src/Server.cpp src/Client.cpp src/Channel.cpp
+NAME = bin/ircserv
 
-OBJ = $(SRC:.cpp=.o)
-
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address
-
+SRC =  Server.cpp main.cpp  Client.cpp Channel.cpp utils.cpp
 CC = c++
+CFLAGS = -Wall -Wextra -Werror -c  -Iinclude 
+LFLAGS = 
 
-NAME = IRC
+BLUE = \033[0;34m
+GREEN = \033[0;32m
+RED = \033[0;31m
+YELLOW = \033[0;33m
+NC = \033[0m
 
-all : $(NAME)
+SRCS = $(addprefix src/, $(SRC))
+OBJS = $(addprefix obj/, $(SRC:.cpp=.o))
+OBJDIR = obj
+SRCDIR = src
 
-$(NAME) : $(OBJ)
-	$(CC) $(CFLAGS) $^  -o $@
+INC = Server.hpp Client.hpp Channel.hpp
 
-%.o: %.cpp src/Server.hpp src/Client.hpp src/Channel.hpp
-	$(CC) $(CFLAGS) -c $< -o $@
+INCS = $(addprefix src/, $(INC)) include/utils.hpp
+
+$(OBJDIR)/%.o : $(SRCDIR)/%.cpp $(INCS)
+	@echo "$(YELLOW)Compiling $<$(NC)"
+	@$(CC) $(CFLAGS) $< -o $@
+
+$(NAME) : $(OBJS) 
+	@$(CC) $^ $(LFLAGS) -o $@
+	@echo "$(GREEN)$(NAME) created$(NC)"
 
 clean :
-	rm -rf $(OBJ)
+	/bin/rm -rf $(OBJS)
 
-fclean : clean
-	rm -rf $(NAME)
+fclean: clean
+	/bin/rm -rf $(NAME)
 
-re : fclean all
+
+re : fclean $(NAME)
