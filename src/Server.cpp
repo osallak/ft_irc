@@ -67,31 +67,24 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
     {
         if(__NewConnections.find(UserId)->second.getPassword().empty())
         {
-            if(cmd.first == "pass")
-            {
-                // size_t fnd = cmd.second.find(':');
-                // if ( fnd != std::string::npos)
-                //     cmd.second.erase(cmd.second.begin() + fnd);
-                if(cmd.second != __password)
-                    __ValRead = send(UserId,":* 667 * Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0);
-                else 
-                    __NewConnections.find(UserId)->second.setPassword(cmd.second);
-            }
-            else
-                __ValRead = send(UserId,":* 667 * Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0);
+                 __NewConnections.find(UserId)->second.setPassword(cmd.second);
+            // if(cmd.first == "pass")
+            // {
+            // }
+            // else;
+                 //__ValRead = send(UserId,":* 667 * :Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0);
+
 
         }
         else if(__NewConnections.find(UserId)->second.getNickname().empty())
         {
-            if(cmd.first == "nick")
-            {
-                if(__users.find(GetUserId(cmd.second)) != __users.end())
-                     __ValRead = send(UserId,":NICK 433 * is already on channel\n",35,0);
-                else
-                    __NewConnections.find(UserId)->second.setNickname(cmd.second);
-            }
-            else
-                __ValRead = send(UserId,":* 667 * Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0);
+                __NewConnections.find(UserId)->second.setNickname(cmd.second);
+            // if(cmd.first == "nick")
+            // {
+            // }
+            // else;
+                //__ValRead = send(UserId,":* 667 * :Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0);
+
 
         }
         else if(__NewConnections.find(UserId)->second.getUsername().empty())
@@ -105,8 +98,55 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
                 else
                 {
                    __NewConnections.find(UserId)->second.setUsername(cmd.second);
-                    std::string msg = ":" + std::string("Rijal") + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!" + __NewConnections.find(UserId)->second.getUsername()+ "@" + "10.11.12.5" + "\n";;
-                    send(UserId,msg.c_str(),msg.size(),0);
+                    std::string msg = ":" + std::string("irc.1337.ma") + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!~" + "yahya" + "@" + "127.0.0.1" + "\r\n";;
+                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
+                    {
+                        std::cout << "send() flaid\n";
+                        exit(0);
+                    }
+                    msg = ":" + std::string("irc.1337.ma") + " 002 " +  __NewConnections.find(UserId)->second.getNickname() + " :Your host is " + "irc.1337.ma" + ", running version 1.0\r\n";
+                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
+                    {
+                        std::cout << "send() flaid\n";
+                        exit(0);
+                    }
+                    msg = ":" + std::string("irc.1337.ma") + " 003 " +  __NewConnections.find(UserId)->second.getNickname() + " :This server was created Wed Oct 12 2022 at 20:31:55 UTC\r\n";
+                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
+                    {
+                        std::cout << "send() flaid\n";
+                        exit(0);
+                    }
+                    // msg = ":" + std::string("irc.1337.ma") + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " " + __hostname + " 1.0\r\n";
+                    msg = ":" + std::string("irc.1337.ma") + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " irc.1337.ma leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
+                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
+                    {
+                        std::cout << "send() flaid\n";
+                        exit(0);
+                    }
+                    msg = ":irc.1337.ma 251 " +  __NewConnections.find(UserId)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
+                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
+                    {
+                        std::cout << "send() flaid\n";
+                        exit(0);
+                    }
+                    msg = ":irc.1337.ma 375 " + __NewConnections.find(UserId)->second.getNickname() + " :- irc.1337.ma Message of the day -\r\n";
+                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
+                    {
+                        std::cout << "send() flaid\n";
+                        exit(0);
+                    }
+                    msg = ":irc.1337.ma 376 " + __NewConnections.find(UserId)->second.getNickname() + " :End of MOTD command\r\n";
+                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
+                    {
+                        std::cout << "send() flaid\n";
+                        exit(0);
+                    }
+                    // msg = ":" + std::string("e1r12p3.1337.ma") + " 005 " +  __NewConnections.find(UserId)->second.getNickname() + " :are supported by this server\r\n";
+                    // if(send(UserId,msg.c_str(),msg.size(),0) == -1)
+                    // {
+                    //     std::cout << "send() flaid\n";
+                    //     exit(0);
+                    // }
                     __NewConnections.find(UserId)->second.setIsLogged(true);
                     __users[UserId] = __NewConnections.find(UserId)->second;
                 }
@@ -243,26 +283,24 @@ void Server::DeleteUser(int __UserId)
         __NewConnections.erase(__UserId);
      close(__pollfds[__currentNdx].fd);
 }
-
 void Server::parseNick(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
-    std::string message = "";
-    if(!__arg.size() || (__arg.size() == 1 && __arg[0] == ":"))
-    {
-        message = ":" + __users[__UserId].getNickname() + " 431 Nick :No nickname given\n"; 
-        __ValRead = send(__UserId,message.c_str(),message.size(), 0);
-    }
+    for(size_t i = 0 ; i < __arg.size();i++)
+        __arg[i] = backslashR(__arg[i]);
+    if(!__arg.size())
+        __arg.push_back(":");
+    if(__arg[0] == ":")
+        __ValRead = send(__UserId,":* 431 * No nickname given\n",27,0);
     else if(__users.find(GetUserId(__arg[0])) != __users.end() && __arg[0] != __users[__UserId].getNickname())
-    {
-        __ValRead = send(__UserId,":NICK 433 * :NickName is already on server\n",44,0);
-    }
+        __ValRead = send(__UserId,":* 433 * :NickName is already on server\n",40,0);
     else
-    {
         __users.find(__UserId)->second.setNickname(__arg[0]);
-    }
     if(__ValRead == -1)
+    {
         std::cout << "send() faild\n";
+        exit(0);
+    }
 }
 
 void Server::parseQuit(int __UserId)
@@ -272,14 +310,11 @@ void Server::parseQuit(int __UserId)
 void Server::parsePart(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
+    for(size_t i = 0 ; i < __arg.size();i++)
+        __arg[i] = backslashR(__arg[i]);
     if(!__arg.size())
         __ValRead = send(__UserId,":* 461 * :Not enough parameters\n",32, 0);
     std::vector<std::string>channels = split(__arg[0],',');
-    for(size_t i = 0 ; i < channels.size();i++)
-    {
-        std::cout << channels[i] << " ";
-    }
-    std::cout << std::endl;
     for(size_t i = 0; i < channels.size();i++)
     {
         if(__channels.find(channels[i]) == __channels.end())
@@ -287,10 +322,15 @@ void Server::parsePart(std::vector<std::string>__arg,int __UserId)
         else if(__channels.find(channels[i])->second.getChannelClients().find(__UserId) ==
              __channels.find(channels[i])->second.getChannelClients().end())
             __ValRead = send(__UserId,":* 442 * :You're not on that channel\n",37, 0);
+        else if(channels[i][0] != '#')
+            __ValRead = send(__UserId,":* 476 * :Bad Channel Mask\n",27, 0);
         else
             __channels[channels[i]].eraseClient(__UserId);
         if(__ValRead == -1)
+        {
             std::cout << "send() failde\n";
+            exit(0);
+        }
         __ValRead = 0;
     }
 }
@@ -299,21 +339,38 @@ void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
     int __ValRead = 0;
     if(!__arg.size())
         __arg.push_back(":");
-    if(__arg.size() == 1 && __arg[0] == ":")
+    for(size_t i = 0 ; i < __arg.size();i++)
+        __arg[i] = backslashR(__arg[i]);
+    __arg[__arg.size() - 1] = backslashR(__arg[__arg.size() - 1]);
+    if((__arg.size() == 1 && __arg[0] == ":" )|| GetUserId(__arg[0]) == -1)
     {
         if(send(__UserId,":* 404 * :No such nick name\n",28, 0) == -1)
+        {
             std::cout << "send() failde\n";
+            exit(0);
+        }
         return;
     }
-    int __ReceiverId = GetUserId(__arg[0]);
+    if(__arg.size() == 1 || !__channels[__arg[1]].getClientNb())
+    {
+        if(send(__UserId,":* 403 * :No such channel\n",26, 0) == -1)
+        {
+            std::cout << "sned() failde\n";
+            exit(0);
+        }
+        return;
+    }
+    if(__arg[1][0] != '#')
+    {
+        if(send(__UserId,":* 476 * :Bad Channel Mask\n",27, 0) == -1)
+        {
+            std::cout << "send() failde\n";
+            exit(0);
+        }
+        return;
+    }
     std::vector<int> vec = __channels.find(__arg[1])->second.getChannelModerator();
-    if(__arg.size() == 1)
-        __ValRead = send(__UserId,":* 403 * :No such channel\n",26, 0);
-    else if(!__channels[__arg[1]].getClientNb())
-        __ValRead = send(__UserId,":* 403 * :No such channel\n",26, 0);
-    else if(__ReceiverId == -1)
-        __ValRead = send(__UserId,":* 404 * :No such nick name\n",28, 0);
-    else if(__channels[__arg[1]].getChannelClient(__users[__UserId].getUsername()) == -1)
+    if(__channels[__arg[1]].getChannelClient(__users[__UserId].getUsername()) == -1)
         __ValRead = send(__UserId,":* 403 *:No such channel\n",28, 0);
     else if(__channels.find(__arg[1])->second.getChannelType() && std::find(vec.begin(),vec.end(),__UserId) == vec.end())
         __ValRead = send(__UserId,":* 482 * : You're not an operator on that channel\n",50, 0);
@@ -322,24 +379,30 @@ void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
         std::string msg = "";
         msg=":* 341 * :" + __users[__UserId].getUsername() + " " + __arg[0] + " " + __arg[1] + '\n';
         __ValRead = send(__UserId,msg.c_str(),msg.size(), 0);
-        __channels[__arg[1]].SetInviteds(__ReceiverId, __users[ __ReceiverId]);
+        __channels[__arg[1]].SetInviteds(GetUserId(__arg[0]), __users[GetUserId(__arg[0])]);
     }
     if(__ValRead == - 1)
+    {
         std::cout << "send() failde\n";
+        exit(0);
+    }
 }
 
 void Server::parseTopic(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
-    if(!__arg.size() || __arg.size() == 1)
+    if(!__arg.size() || __arg.size() == 1 || __channels.find(__arg[0]) == __channels.end())
     {
             __ValRead = send(__UserId,":* 403 * :No such channel\n",26, 0);
             return;
     }
+    if(__arg[1][0] != '#')
+    {
+        __ValRead = send(__UserId,":* 476 * :Bad Channel Mask\n",27, 0);
+        return;
+    }
     std::vector<int> vec = __channels.find(__arg[0])->second.getChannelModerator();
-    if(__channels.find(__arg[0]) == __channels.end())
-        __ValRead = send(__UserId,":* 403 * :No such channel\n",26, 0);
-    else if(__channels.find(__arg[0])->second.getChannelType() && std::find(vec.begin(),vec.end(),__UserId) != vec.end())
+    if(__channels.find(__arg[0])->second.getChannelType() && std::find(vec.begin(),vec.end(),__UserId) == vec.end())
         __ValRead = send(__UserId,":* 482 * You're not an operator on that channel\n",48, 0);
 
     else
@@ -357,7 +420,10 @@ void Server::parseTopic(std::vector<std::string>__arg,int __UserId)
         }
     }
     if(__ValRead == - 1)
+    {
         std::cout << "send() failde\n";
+        exit(0);
+    }
 }
 
 std::string Server::getPassword() const
@@ -521,11 +587,49 @@ bool Server::run( void )
                                     std::cout << "correct Form : Pass <password> \\n nick <nickname> \\n user <username>\n";
                                 else
                                 {
+                                    std::string str = "";
+                                    for(size_t i = 0 ; i < cmds[1].second.size();i++)
+                                    {
+                                        if(cmds[1].second[i] == ' ')
+                                            break;
+                                        else
+                                            str.push_back(cmds[1].second[i]);
+                                    }
                                     __NewConnections.find(__pollfds[i].fd)->second.setPassword(cmds[0].second);
-                                    __NewConnections.find(__pollfds[i].fd)->second.setUsername(cmds[1].second);
+                                    __NewConnections.find(__pollfds[i].fd)->second.setUsername(str);
                                     __NewConnections.find(__pollfds[i].fd)->second.setNickname(cmds[2].second);
                                     __users[__pollfds[i].fd] = __NewConnections.find(__pollfds[i].fd)->second;
-                                    std::string msg = ":" + std::string("Rijal") + " 001 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + "!" + __NewConnections.find(__pollfds[i].fd)->second.getUsername()+ "@" + "10.11.12.5" + "\n";
+                                     std::string msg = ":" + std::string("Rijal") + " 001 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + "!" + __NewConnections.find(__pollfds[i].fd)->second.getUsername()+ "@" + "10.11.12.5" + "\r\n";;
+                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
+                                    {
+                                        std::cout << "send() flaid\n";
+                                        exit(0);
+                                    }
+                                    msg = ":" + std::string("Rijal") + " 002 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :Your host is " + __hostname + ", running version 1.0\r\n";
+                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
+                                    {
+                                        std::cout << "send() flaid\n";
+                                        exit(0);
+                                    }
+                                    msg = ":" + std::string("Rijal") + " 003 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :This server was created 2021-05-01\r\n";
+                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
+                                    {
+                                        std::cout << "send() flaid\n";
+                                        exit(0);
+                                    }
+                                    msg = ":" + std::string("Rijal") + " 004 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " " + __hostname + " 1.0\r\n";
+                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
+                                    {
+                                        std::cout << "send() flaid\n";
+                                        exit(0);
+                                    }
+                                    msg = ":" + std::string("Rijal") + " 005 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :are supported by this server\r\n";
+                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
+                                    {
+                                        std::cout << "send() flaid\n";
+                                        exit(0);
+                                    }
+                                  
                                 }
 
                             }
@@ -691,7 +795,6 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                     __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
                     message = ":" + GetUserName(fd) + " JOIN " + chn[i] + "\n";
                     send_msg(fd, message);
-                    // std::cout << GetUserName(fd) << " joined to the channel "<< chn[i] << "\n";
                     break ;
                 }
                 if (it->second.getChannelPass() == 1)
@@ -726,7 +829,6 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                     {
                         message = ":" + GetUserName(fd) + " 475 * Cannot join channel (+k)\n";
                         send_msg(fd, message);
-                        // std::cout << "ERR_BADCHANNELKEY(475)\n";
                         break ;
                     }
                     else
