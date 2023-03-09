@@ -66,27 +66,9 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
     if(cmd.first != "Error")
     {
         if(__NewConnections.find(UserId)->second.getPassword().empty())
-        {
                  __NewConnections.find(UserId)->second.setPassword(cmd.second);
-            // if(cmd.first == "pass")
-            // {
-            // }
-            // else;
-                 //__ValRead = send(UserId,":* 667 * :Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0);
-
-
-        }
         else if(__NewConnections.find(UserId)->second.getNickname().empty())
-        {
                 __NewConnections.find(UserId)->second.setNickname(cmd.second);
-            // if(cmd.first == "nick")
-            // {
-            // }
-            // else;
-                //__ValRead = send(UserId,":* 667 * :Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0);
-
-
-        }
         else if(__NewConnections.find(UserId)->second.getUsername().empty())
         {
             if(cmd.first == "user")
@@ -98,64 +80,25 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
                 else
                 {
                    __NewConnections.find(UserId)->second.setUsername(cmd.second);
-                    std::string msg = ":" + std::string("irc.1337.ma") + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!~" + "yahya" + "@" + "127.0.0.1" + "\r\n";;
+                    std::string msg = ":" + __hostname + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!~" + __NewConnections.find(UserId)->second.getNickname() + "@" + "127.0.0.1\r\n";
+                    msg += ":" + __hostname + " 002 " +  __NewConnections.find(UserId)->second.getNickname() + " :Your host is " + __hostname + ", running version leet-irc 1.0.0\r\n";
+                    msg += ":" + __hostname + " 003 " +  __NewConnections.find(UserId)->second.getNickname() + " :This server has been started Wed Oct 12 2022\r\n";
+                    msg += ":" + __hostname + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " " + __hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
+                    msg += ":" + __hostname + " 251 " + __NewConnections.find(UserId)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
+                    msg += ":" + __hostname + " 375 " + __NewConnections.find(UserId)->second.getNickname() + " :- " + __hostname + " Message of the day -\r\n";
+                    msg += ":" + __hostname + " 376 " + __NewConnections.find(UserId)->second.getNickname() + " :End of MOTD command\r\n";
                     if(send(UserId,msg.c_str(),msg.size(),0) == -1)
                     {
                         std::cout << "send() flaid\n";
                         exit(0);
                     }
-                    msg = ":" + std::string("irc.1337.ma") + " 002 " +  __NewConnections.find(UserId)->second.getNickname() + " :Your host is " + "irc.1337.ma" + ", running version 1.0\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":" + std::string("irc.1337.ma") + " 003 " +  __NewConnections.find(UserId)->second.getNickname() + " :This server was created Wed Oct 12 2022 at 20:31:55 UTC\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    // msg = ":" + std::string("irc.1337.ma") + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " " + __hostname + " 1.0\r\n";
-                    msg = ":" + std::string("irc.1337.ma") + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " irc.1337.ma leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":irc.1337.ma 251 " +  __NewConnections.find(UserId)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":irc.1337.ma 375 " + __NewConnections.find(UserId)->second.getNickname() + " :- irc.1337.ma Message of the day -\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":irc.1337.ma 376 " + __NewConnections.find(UserId)->second.getNickname() + " :End of MOTD command\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    // msg = ":" + std::string("e1r12p3.1337.ma") + " 005 " +  __NewConnections.find(UserId)->second.getNickname() + " :are supported by this server\r\n";
-                    // if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    // {
-                    //     std::cout << "send() flaid\n";
-                    //     exit(0);
-                    // }
                     __NewConnections.find(UserId)->second.setIsLogged(true);
                     __users[UserId] = __NewConnections.find(UserId)->second;
                 }
             }
         }
         if(__ValRead == -1)
-        {
-            std::cout << "send() flaid\n";
-        }
+            std::cout << "send() failed\n";
     }
 }
 
@@ -163,22 +106,16 @@ std::vector<std::pair<std::string, std::string> > Server::ParceConnectionLine(st
 {
     cmd = trim(cmd);
     cmd = backslashR(cmd);
-    // std::cout << cmd << std::endl;
     std::vector<std::pair<std::string,std::string> >ret;
     std::size_t __found  = cmd.find("\n");
     std::vector<std::string>ConnectionInf(3);
     ConnectionInf[0] =  cmd.substr(0,__found);
-    // std::cout << "zamla  li 9bal man zamla\n";
-    // std::cout << "|zamla "<< ConnectionInf[0] << "\n";
-    // std::cout << "zamla  li ba3d man zamla\n";
     cmd = cmd.substr(__found + 1 ,- 1);
     __found =  cmd.find("\n");
     ConnectionInf[1] = cmd.substr(0,__found);
     ConnectionInf[2] = cmd.substr(__found + 1 , -1);
     for(unsigned int i = 0 ; i < 3;i++)
-    {
         ConnectionInf[i] = trim( ConnectionInf[i]);
-    }
     for(int i = 0 ; i < 3;i++)
     {
         __found = ConnectionInf[i].find(" ");
@@ -192,10 +129,13 @@ std::vector<std::pair<std::string, std::string> > Server::ParceConnectionLine(st
     fnd = ret[1].second.find(':');
     if (fnd != std::string::npos)
         ret[1].second.erase(ret[1].second.begin() + fnd);
-    if((ret[0].first != "pass" || ret[0].second != __password ) || ret[2].first != "nick" || ret[1].first != "user")
+    if(ret[0].first == "user")
     {
-        ret.push_back(std::make_pair("error","error"));
+        if(ret[2].first != "nick" || ret[1].first != "nick")
+            ret.push_back(std::make_pair("error","error"));
     }
+    else if((ret[0].first != "pass" || ret[0].second != __password ) || ret[2].first != "nick" || ret[1].first != "user")
+        ret.push_back(std::make_pair("error","error"));
     return(ret);
 }
 
@@ -256,7 +196,6 @@ void    Server::__ListChannelsUserInvTo(int UserId)
     for (it = __channels.begin(); it != __channels.end(); ++it) {
         if(it->second.getInvited(UserId))
         {
-
             __ValRead = send(UserId,it->second.getChannelName().c_str(),it->second.getChannelName().size(),0);
             __ValRead = send(UserId,"\n",1,0);
             if(__ValRead == -1)
@@ -307,6 +246,7 @@ void Server::parseQuit(int __UserId)
 {
     DeleteUser(__UserId);
 }
+
 void Server::parsePart(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
@@ -520,7 +460,6 @@ bool Server::run( void )
                 __pollfds.push_back(__NewClient);
                 Client NewClient = Client();
                 __NewConnections[__NewClient.fd] = NewClient;
-                
             }
             else 
             {
@@ -556,7 +495,6 @@ bool Server::run( void )
                         CurrentBuffer+=buffer;
                         __NewConnections.find(__pollfds[i].fd)->second.setBuffer(CurrentBuffer);
                         CurrentBuffer =   __NewConnections.find(__pollfds[i].fd)->second.getBuffer();
-
                         if(CurrentBuffer.find("\n") != std::string::npos)
                         {
                             int __Backtoline = 0;
@@ -574,11 +512,10 @@ bool Server::run( void )
                             }
                             else
                             {
-                                std::cout << "current buffer : |" << CurrentBuffer << "|\n";
+                                // std::cout << "current buffer : |" << CurrentBuffer << "|\n";
                                 std::vector<std::pair<std::string, std::string> > cmds = ParceConnectionLine(CurrentBuffer);
-                                for (size_t i = 0;i < cmds.size();i++)
-                                    std::cout << "|" << cmds[i].first << "|" << cmds[i].second << "|\n";
-                                std::cout << "size : " << cmds.size() << "\n";
+                                // for (size_t i = 0;i < cmds.size();i++)
+                                //     std::cout << "|" << cmds[i].first << "|" << cmds[i].second << "|\n";
                                 if(cmds.size() != 3)
                                     std::cout << "correct Form : Pass <password> \\n nick <nickname> \\n user <username>\n";
                                 else
@@ -595,37 +532,18 @@ bool Server::run( void )
                                     __NewConnections.find(__pollfds[i].fd)->second.setUsername(str);
                                     __NewConnections.find(__pollfds[i].fd)->second.setNickname(cmds[2].second);
                                     __users[__pollfds[i].fd] = __NewConnections.find(__pollfds[i].fd)->second;
-                                     std::string msg = ":" + std::string("Rijal") + " 001 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + "!" + __NewConnections.find(__pollfds[i].fd)->second.getUsername()+ "@" + "10.11.12.5" + "\r\n";;
+                                    std::string msg = ":" + __hostname + " 001 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + "!~" + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + "@" + "127.0.0.1\r\n";
+                                    msg += ":" + __hostname + " 002 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :Your host is " + __hostname + ", running version leet-irc 1.0.0\r\n";
+                                    msg += ":" + __hostname + " 003 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :This server has been started Wed Oct 12 2022\r\n";
+                                    msg += ":" + __hostname + " 004 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " " + __hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
+                                    msg += ":" + __hostname + " 251 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
+                                    msg += ":" + __hostname + " 375 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :- " + __hostname + " Message of the day -\r\n";
+                                    msg += ":" + __hostname + " 376 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :End of MOTD command\r\n";
                                     if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
                                     {
                                         std::cout << "send() flaid\n";
                                         exit(0);
                                     }
-                                    msg = ":" + std::string("Rijal") + " 002 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :Your host is " + __hostname + ", running version 1.0\r\n";
-                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    {
-                                        std::cout << "send() flaid\n";
-                                        exit(0);
-                                    }
-                                    msg = ":" + std::string("Rijal") + " 003 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :This server was created 2021-05-01\r\n";
-                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    {
-                                        std::cout << "send() flaid\n";
-                                        exit(0);
-                                    }
-                                    msg = ":" + std::string("Rijal") + " 004 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " " + __hostname + " 1.0\r\n";
-                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    {
-                                        std::cout << "send() flaid\n";
-                                        exit(0);
-                                    }
-                                    msg = ":" + std::string("Rijal") + " 005 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :are supported by this server\r\n";
-                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    {
-                                        std::cout << "send() flaid\n";
-                                        exit(0);
-                                    }
-                                  
                                 }
 
                             }
@@ -672,10 +590,10 @@ void    Server::parseCommand( int fd )
         command[i] = (char)(tolower(command[i]));
     }
     res.erase(res.begin());
-    for(size_t i = 0 ; i < res.size();i++)
-        std::cout << res[i] << std::endl;
-    std::cout << "Cmd ------>" << command  << "|"<< std::endl;
-    std::cout << res.size() << std::endl;
+    // for(size_t i = 0 ; i < res.size();i++)
+    //     std::cout << res[i] << std::endl;
+    // std::cout << "Cmd ------>" << command  << "|"<< std::endl;
+    // std::cout << res.size() << std::endl;
     if (command == KICK)
         parseKick(res, fd);
     else if (command == "invite")
@@ -893,9 +811,9 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
             //fd of client
             i = it->second.getChannelClient(vec[2]);
             //plus or minus mode 
-            if (vec[1][0] == '+')
+            if (vec[1][0] == PLUS)
             {
-                if (vec[1][1] == 'i')
+                if (vec[1][1] == INV)
                 {
                     if (it->second.getChannelType() == 1)
                     {
@@ -908,7 +826,7 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                     send_msg(fd, message);
                     return ;
                 }
-                if (vec[1][1] == 'k')
+                if (vec[1][1] == KEY)
                 {
                     if (i != -1)
                     {
@@ -931,7 +849,7 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                         return ;
                     }
                 }
-                if (vec[1][1] == 'm')
+                if (vec[1][1] == MOD)
                 {
                     if (vec.size() == 3)
                     {
@@ -962,11 +880,10 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                         return ;
                     }
                 }
-                // if (vec[1][1] == '')
             }
-            else if (vec[1][0] == '-')
+            else if (vec[1][0] == MINUS)
             {
-                if (vec[1][1] == 'i')
+                if (vec[1][1] == INV)
                 {
                     if (it->second.getChannelType() == 0)
                     {
@@ -979,7 +896,7 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                     send_msg(fd, message);
                     return ;
                 }
-                if (vec[1][1] == 'k' && i != -1)
+                if (vec[1][1] == KEY && i != -1)
                 {
                     if (vec.size() == 2)
                     {
@@ -996,7 +913,7 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                         return ;
                     }
                 }
-                if (vec[1][1] == 'm')
+                if (vec[1][1] == MOD)
                 {
                     if (vec.size() == 3)
                     {
@@ -1095,8 +1012,8 @@ void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
     std::string message = "";
     if (vec.size() == 0)
     {
-         message = ":" + __users[fd].getNickname() + " 461 " + "PRIVMSG " + "Not enough parameters\n";
-         send(fd, message.c_str(), message.size(), 0);
+        message = ":" + __users[fd].getNickname() + " 461 " + "PRIVMSG " + "Not enough parameters\n";
+        send(fd, message.c_str(), message.size(), 0);
         return ;
     }
     if (vec.size() < 2)
@@ -1105,35 +1022,27 @@ void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
         send(fd, message.c_str(), message.size(), 0);
         return ;
     }
-    
     std::string msg = "";
-
     if (vec[1][0] != ':')
         msg += ":";
-    
     for (size_t i = 1; i < vec.size(); ++i)
     {
         msg += vec[i];
         if (i != vec.size() - 1)
             msg += " ";
     }
-
     std::string targets = vec[0];
     std::vector<std::string> targetsVec;
-
     while (targets.find(',') != std::string::npos)
     {
         targetsVec.push_back(targets.substr(0, targets.find(',')));
         targets.erase(0, targets.find(',') + 1);
     }
     targetsVec.push_back(targets);
-
-   for (size_t i = 0; i < targetsVec.size(); ++i)
-   {
+    for (size_t i = 0; i < targetsVec.size(); ++i)
+    {
         if (targetsVec[i][0] == CHANNEL_PREFIX) {
-
             std::map<std::string, Channel>::iterator it = __channels.find(targetsVec[i]);// search for channel in the map
-
             if ( it == __channels.end() ) {
                 message = ":" + __users[fd].getNickname() + " 403 " + "PRIVMSG " + "No such channel\n";
                 send(fd, message.c_str(), message.size(), 0);
@@ -1263,13 +1172,11 @@ void    Server::parseList(std::vector<std::string> &vec, int fd)
 
     for (size_t i = 0; i < chns.size(); ++i) {
         std::map<std::string, Channel>::iterator it = __channels.find(chns[i]);
-
         if (it == __channels.end()) {
             message = ":" + __users[fd].getNickname() + " 403 " + "LIST " + "No such channel\n";
             send(fd, message.c_str(), message.size(), 0);
             return ;
         }
-        
         Channel channel = it->second;
         if (channel.getChannelType() == 1 && isInChannel(channel, fd) == false)
         {
@@ -1285,7 +1192,6 @@ void    Server::parseList(std::vector<std::string> &vec, int fd)
 void    Server::parseKick(std::vector<std::string> &vec, int fd)
 {
     std::string message;
-
     if (vec.size() == 0) {
         message = ":" + __users[fd].getNickname() + " 461 " + "KICK " + "Not enough parameters\n";
         send(fd, message.c_str(), message.size(), 0);
@@ -1308,7 +1214,6 @@ void    Server::parseKick(std::vector<std::string> &vec, int fd)
         send(fd, message.c_str(), message.size(), 0);
         return ;
     }
-
     std::vector<int>::iterator it3 = std::find(channel.getChannelModerator().begin(), channel.getChannelModerator().end(), fd);
     if (it3 == channel.getChannelModerator().end())
     {
@@ -1406,31 +1311,25 @@ void    Server::parseNotice(std::vector<std::string> &vec, int fd)
         return ;
     if (vec.size() < 2)
         return ;
-    
     std::string msg = "";
-
     if (vec[1][0] != ':')
         msg += ":";
-    
     for (size_t i = 1; i < vec.size(); ++i)
     {
         msg += vec[i];
         if (i != vec.size() - 1)
             msg += " ";
     }
-
     std::string targets = vec[0];
     std::vector<std::string> targetsVec;
-
     while (targets.find(',') != std::string::npos)
     {
         targetsVec.push_back(targets.substr(0, targets.find(',')));
         targets.erase(0, targets.find(',') + 1);
     }
     targetsVec.push_back(targets);
-
-   for (size_t i = 0; i < targetsVec.size(); ++i)
-   {
+    for (size_t i = 0; i < targetsVec.size(); ++i)
+    {
         if (targetsVec[i][0] == CHANNEL_PREFIX) {
 
             std::map<std::string, Channel>::iterator it = __channels.find(targetsVec[i]);// search for channel in the map
