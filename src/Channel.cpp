@@ -135,7 +135,7 @@ int Channel::getChannelClientt(int fd) const
 
 void Channel::setChannelClients(int __UserId , std::string __UserName)
 {
-    __channelClients[__UserId].setUsername(__UserName);
+    __channelClients[__UserId].setNickname(__UserName);
 }
 
 void Channel::setChannelPass(const int& channelPass)
