@@ -392,7 +392,7 @@ bool Server::run( void )
         std::cerr << "Error: setsockopt failed" << std::endl;
         return (false);
     }
-    if (fcntl(__socket, F_SETFD, O_NONBLOCK)  < 0)// check if this is the right way to do it
+    if (fcntl(__socket, F_SETFD, O_NONBLOCK)  < 0)
     {
         std::cerr << "Error: fcntl failed" << std::endl;
         return (false);
@@ -413,7 +413,7 @@ bool Server::run( void )
     };
     __spollfd.fd = __socket;
     __spollfd.events = POLLIN;
-    // __spollfd.revents = 0;
+    __spollfd.revents = 0;
     __pollfds.push_back(__spollfd);// add the server socket to the pollfds vector, to keep track of it
     
     // infinite loop to keep the server running
@@ -446,6 +446,10 @@ bool Server::run( void )
                 if ((new_socket = accept(__socket, (struct sockaddr *)&new_address, (socklen_t*)&addrlen)) < 0)
                 {
                     std::cerr << "Error: accept failed" << std::endl;
+                    return (false);
+                }
+                if (fcntl(__socket, F_SETFD, O_NONBLOCK)  < 0) {
+                    std::cerr << "Error: fcntl failed" << std::endl;
                     return (false);
                 }
                 struct pollfd __NewClient;
@@ -675,11 +679,6 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
             //check if it's private
             if (it->second.getChannelType() == 1)
             {
-                // std::map<int,Client>z = it->second.getChannelInvited();
-                // for(std::map<int,Client>::iterator zob = z.begin() ;zob != z.end();zob++)
-                // {
-                //     std::cout << zob->first << std::endl;
-                // }
                 if (it->second.getChannelInvited().empty() && vec.size() != 2)
                 {
                     message = ":" + GetUserName(fd) + " 473 * Cannot join channel (+i)\n";
