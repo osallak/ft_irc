@@ -27,7 +27,7 @@ $(OBJDIR)/%.o : $(SRCDIR)/%.cpp $(INCS)
 
 $(NAME) : $(OBJS) 
 	@$(CC) $^ $(LFLAGS) -o $@
-	@echo "$(CYAN)$(NAME) created$(NC)"
+	@echo "\n ✅ $(GREEN)$(NAME) created$(NC)"
 
 clean :
 	@/bin/rm -rf $(OBJS)
