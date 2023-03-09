@@ -69,6 +69,9 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
         {
             if(cmd.first == "pass")
             {
+                // size_t fnd = cmd.second.find(':');
+                // if ( fnd != std::string::npos)
+                //     cmd.second.erase(cmd.second.begin() + fnd);
                 if(cmd.second != __password)
                     __ValRead = send(UserId,":* 667 * Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0);
                 else 
@@ -118,10 +121,15 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
 std::vector<std::pair<std::string, std::string> > Server::ParceConnectionLine(std::string cmd)
 {
     cmd = trim(cmd);
+    cmd = backslashR(cmd);
+    // std::cout << cmd << std::endl;
     std::vector<std::pair<std::string,std::string> >ret;
     std::size_t __found  = cmd.find("\n");
     std::vector<std::string>ConnectionInf(3);
     ConnectionInf[0] =  cmd.substr(0,__found);
+    // std::cout << "zamla  li 9bal man zamla\n";
+    // std::cout << "|zamla "<< ConnectionInf[0] << "\n";
+    // std::cout << "zamla  li ba3d man zamla\n";
     cmd = cmd.substr(__found + 1 ,- 1);
     __found =  cmd.find("\n");
     ConnectionInf[1] = cmd.substr(0,__found);
@@ -137,7 +145,13 @@ std::vector<std::pair<std::string, std::string> > Server::ParceConnectionLine(st
             return(ret);
         ret.push_back(std::make_pair(trim(ConnectionInf[i].substr(0,__found)),trim(ConnectionInf[i].substr(__found + 1, -1))));
     }
-    if((ret[0].first != "password" || ret[0].second != __password ) || ret[2].first != "nickname" || ret[1].first != "username")
+    size_t fnd = ret[0].second.find(':');
+    if (fnd != std::string::npos)
+        ret[0].second.erase(ret[0].second.begin() + fnd);
+    fnd = ret[1].second.find(':');
+    if (fnd != std::string::npos)
+        ret[1].second.erase(ret[1].second.begin() + fnd);
+    if((ret[0].first != "pass" || ret[0].second != __password ) || ret[2].first != "nick" || ret[1].first != "user")
     {
         ret.push_back(std::make_pair("error","error"));
     }
@@ -511,15 +525,20 @@ bool Server::run( void )
                             }
                             else
                             {
+                                std::cout << "current buffer : |" << CurrentBuffer << "|\n";
                                 std::vector<std::pair<std::string, std::string> > cmds = ParceConnectionLine(CurrentBuffer);
+                                for (size_t i = 0;i < cmds.size();i++)
+                                    std::cout << "|" << cmds[i].first << "|" << cmds[i].second << "|\n";
+                                std::cout << "size : " << cmds.size() << "\n";
                                 if(cmds.size() != 3)
                                     std::cout << "correct Form : Pass <password> \\n nick <nickname> \\n user <username>\n";
                                 else
                                 {
-                                    std::cout << "9alwa\n";
                                     __NewConnections.find(__pollfds[i].fd)->second.setPassword(cmds[0].second);
                                     __NewConnections.find(__pollfds[i].fd)->second.setUsername(cmds[1].second);
-                                    __NewConnections.find(__pollfds[i].fd)->second.setUsername(cmds[2].second);
+                                    __NewConnections.find(__pollfds[i].fd)->second.setNickname(cmds[2].second);
+                                    __users[__pollfds[i].fd] = __NewConnections.find(__pollfds[i].fd)->second;
+                                    std::string msg = ":" + std::string("Rijal") + " 001 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + "!" + __NewConnections.find(__pollfds[i].fd)->second.getUsername()+ "@" + "10.11.12.5" + "\n";
                                 }
 
                             }
