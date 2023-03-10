@@ -247,7 +247,7 @@ bool Server::run( void )
     return (true);
 }
 
-std::string Server::GetUserName(int fd)
+std::string Server::getNicknameById(int fd)
 {
     std::map<int, Client>::iterator it;
     std::string                     message;
@@ -256,7 +256,7 @@ std::string Server::GetUserName(int fd)
     {
         return (it->second.getNickname());
     }
-    message = ":" + GetUserName(fd) + " 401 * :No such nick/channel\n";
+    message = ":" + getNicknameById(fd) + " 401 * :No such nick/channel\n";
     sendMessage(fd, message);
     return ("EROOR");
 }

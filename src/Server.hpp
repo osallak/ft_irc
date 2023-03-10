@@ -69,7 +69,7 @@ class Server{
         void                    parseNotice(std::vector<std::string> &, int fd);
         void                    runBot(const std::string& ,int);
         void                    parseNick(std::vector<std::string> , int fd);
-        std::string             GetUserName(int fd);
+        std::string             getNicknameById(int fd);
         int                     IsModerator(Channel &channel, std::string username);
         void                    RemoveModerator(Channel &channel, std::string username);
         void                    parsePing(std::vector<std::string> &, int fd);

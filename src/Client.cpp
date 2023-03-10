@@ -36,7 +36,7 @@ int Client::getFd() const {
     return (__pollfd.fd);
 }
 
-std::string Client::getUsername() const {
+std::string Client::getNicknameById() const {
     return __username;
 }
 

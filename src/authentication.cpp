@@ -36,7 +36,7 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
                     sendMessage(UserId,":* 433 * :NickName is already on server\n");
                     return;
                 }
-                if(!__NewConnections.find(UserId)->second.getPassword().empty() && !__NewConnections.find(UserId)->second.getUsername().empty()) {
+                if(!__NewConnections.find(UserId)->second.getPassword().empty() && !__NewConnections.find(UserId)->second.getNicknameById().empty()) {
                      __NewConnections.find(UserId)->second.setNickname(cmd.second);
                     displayWelcomeMessage(UserId);
                     __NewConnections.find(UserId)->second.setIsLogged(true);

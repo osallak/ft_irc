@@ -16,7 +16,7 @@ void    Server::parseNames(std::vector<std::string> &vec, int fd)
         sendMessage(fd, message);
         for (; it != __users.end(); ++it)
         {
-            message = ":" + __users[fd].getNickname() + " 353 " + "NAMES " + "= " + it->second.getUsername() + "\n";
+            message = ":" + __users[fd].getNickname() + " 353 " + "NAMES " + "= " + it->second.getNicknameById() + "\n";
             sendMessage(fd, message);
         }
         message = ":" + __users[fd].getNickname() + " 366 " + "NAMES " + "= " + "End of /NAMES list\n";
@@ -51,7 +51,7 @@ void    Server::parseNames(std::vector<std::string> &vec, int fd)
         sendMessage(fd, message);
         for (; it2 != channel.getChannelClients().end(); ++it2)
         {
-            message = ":" + __users[fd].getNickname() + " 353 " + "NAMES " + "= " + it2->second.getUsername() + "\n";
+            message = ":" + __users[fd].getNickname() + " 353 " + "NAMES " + "= " + it2->second.getNicknameById() + "\n";
             sendMessage(fd, message);
         }
     }

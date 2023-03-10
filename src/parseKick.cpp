@@ -46,6 +46,10 @@ void    Server::parseKick(std::vector<std::string> &vec, int fd)
             message = ":" + __users[fd].getNickname() + " KICK " + channel.getChannelName() + " " + vec[1] + " :" + "Kicked by " + __users[fd].getNickname() + "\n";
             sendMessage(it2->first, message);
             channel.eraseClient(it2->first);
+            if (channel.getInvited(it2->first))
+                channel.eraseInvited(it2->first);
+            if (IsModerator(channel, getNicknameById(it2->first)))
+                channel.eraseModerator(it2->first);
             return ;
         }
     }

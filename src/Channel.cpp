@@ -118,7 +118,7 @@ int Channel::getChannelClient(std::string __UserName) const
 {
     std::map<int, Client>::const_iterator it;
     for (it = BigenIterator(); it != EndIterator(); ++it) {
-        if(it->second.getUsername() == __UserName)
+        if(it->second.getNickname() == __UserName)
             return(it->first);
     }
     return(-1);
@@ -128,8 +128,9 @@ int Channel::getChannelClientt(int fd) const
 {
     std::map<int, Client>::const_iterator it;
     it = __channelClients.find(fd);
-    if (it != __channelClients.end())
+    if (it != __channelClients.end()){
         return(1);
+    }
     return(-1);
 }
 
@@ -172,8 +173,10 @@ const std::map<int, Client>& Channel::getChannelClients() const
 
 void Channel::eraseClient(int __UserId)
 {
-    if(__channelClients.find(__UserId) != __channelClients.end())
-        __channelClients.erase(__UserId);
+    std::map<int, Client>::iterator it = __channelClients.find(__UserId);
+    if(it != __channelClients.end()){
+        __channelClients.erase(it);
+    }
 }
 void Channel::eraseInvited(int __UserId)
 {

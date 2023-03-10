@@ -66,7 +66,6 @@ void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
                 sendMessage(fd, message);
             } else if (userId == fd){
                 message = ":" + __users[fd].getNickname() + " 400 " + "PRIVMSG " + "Cannot send to yourself\n";
-                std::cout << "Cannot send to yourself" << std::endl;
                 sendMessage(fd, message);
             } else {
                 message = ":" + __users[fd].getNickname() + " PRIVMSG " + targetsVec[i] + " " + msg + "\n";

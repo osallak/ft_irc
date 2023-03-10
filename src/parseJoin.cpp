@@ -20,7 +20,7 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
     k = 0;
     if (vec.size() == 0 || vec[0][0] != '#' || (vec[0][0] == '#' && vec[0].size() == 1))
     {
-        message = ":" + GetUserName(fd) + " 461 JOIN :Not enough parameters\n";
+        message = ":" + getNicknameById(fd) + " 461 JOIN :Not enough parameters\n";
         sendMessage(fd, message);
         return ;
     }
@@ -49,14 +49,14 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                     __channels[chn[i]].setChannelPass(1);
                     __channels[chn[i]].setChannelPassword(key[i]);
                 }
-                message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
+                message = ":" + getNicknameById(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
                 sendMessage(fd, message);
                 break ;
             }
             //if user already exist
             if (it->second.getChannelClientt(fd) == 1)
             {
-                message = ":" + GetUserName(fd) + " 443 * :You are already in this channel\n";
+                message = ":" + getNicknameById(fd) + " 443 * :You are already in this channel\n";
                 sendMessage(fd, message);
                 break ;
             }
@@ -65,7 +65,7 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
             {
                 if (it->second.getChannelInvited().empty() && vec.size() != 2)
                 {
-                    message = ":" + GetUserName(fd) + " 473 * Cannot join channel (+i)\n";
+                    message = ":" + getNicknameById(fd) + " 473 * Cannot join channel (+i)\n";
                     sendMessage(fd, message);
                     break ;
                 }
@@ -73,7 +73,7 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                 if (inv && vec.size() != 2)
                 {
                     __channels[chn[i]].setChannelClients(fd, __users[fd].getNickname());
-                    message = ":" + GetUserName(fd) + " JOIN " + chn[i] + "\n";
+                    message = ":" + getNicknameById(fd) + " JOIN " + chn[i] + "\n";
                     sendMessage(fd, message);
                     break ;
                 }
@@ -81,14 +81,14 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                 {
                     if ((k < key.size() && it->second.getChannelPassword() != key[k++]) || key.size() == 0)
                     {
-                        message = ":" + GetUserName(fd) + " 475 * Cannot join channel (+k)\n";
+                        message = ":" + getNicknameById(fd) + " 475 * Cannot join channel (+k)\n";
                         sendMessage(fd, message);
                         break ;
                     }
                     else
                     {
                         __channels[chn[i]].setChannelClients(fd, __users[fd].getNickname());
-                        message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
+                        message = ":" + getNicknameById(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
                         sendMessage(fd, message);
                         break ;
                     }
@@ -96,7 +96,7 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                 else
                 {
                     __channels[chn[i]].setChannelClients(fd, __users[fd].getNickname());
-                    message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
+                    message = ":" + getNicknameById(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
                     sendMessage(fd, message);
                     break ;
                 }
@@ -107,14 +107,14 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                 {
                     if (key.size() <= i || it->second.getChannelPassword() != key[k++])
                     {
-                        message = ":" + GetUserName(fd) + " 475 * Cannot join channel (+k)\n";
+                        message = ":" + getNicknameById(fd) + " 475 * Cannot join channel (+k)\n";
                         sendMessage(fd, message);
                         break ;
                     }
                     else
                     {
                         __channels[chn[i]].setChannelClients(fd, __users[fd].getNickname());
-                        message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
+                        message = ":" + getNicknameById(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
                         sendMessage(fd, message);
                         break ;
                     }
@@ -123,12 +123,12 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                 {
                     if (it->second.getChannelClientt(fd) == 1)
                     {
-                        message = ":" + GetUserName(fd) + " 443 * :You are already in this channel\n";
+                        message = ":" + getNicknameById(fd) + " 443 * :You are already in this channel\n";
                         sendMessage(fd, message);
                         break ;
                     }
                     __channels[chn[i]].setChannelClients(fd, __users[fd].getNickname());
-                    message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
+                    message = ":" + getNicknameById(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
                     sendMessage(fd, message);
                     break ;
                 }
