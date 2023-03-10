@@ -9,12 +9,10 @@
 void    Server::parsePing(std::vector<std::string> &vec, int fd)
 {
     std::string message = "";
-    if (vec.size() < 2)
+    if (vec.size() < 1)
         return ;
     std::string msg = "";
-    if (vec[1][0] != ':')
-        msg += ":";
-    for (size_t i = 1; i < vec.size(); ++i)
+    for (size_t i = 0; i < vec.size(); ++i)
     {
         msg += vec[i];
         if (i != vec.size() - 1)

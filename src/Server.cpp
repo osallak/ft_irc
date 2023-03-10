@@ -111,32 +111,27 @@ bool Server::run( void )
     __socket = socket(AF_INET, SOCK_STREAM, 0);
     if (__socket == -1)
     {
-        std::cerr << "Error: socket creation failed" << std::endl;
-        return (false);
+        throw std::runtime_error("Error: socket failed");
     }
     if (setsockopt(__socket, SOL_SOCKET, SO_REUSEADDR, &__opt, sizeof(__opt)) < 0)
     {
-        std::cerr << "Error: setsockopt failed" << std::endl;
-        return (false);
+        throw std::runtime_error("Error: setsockopt failed");
     }
     if (fcntl(__socket, F_SETFD, O_NONBLOCK)  < 0)
     {
-        std::cerr << "Error: fcntl failed" << std::endl;
-        return (false);
+        throw std::runtime_error("Error: fcntl failed");
     }
     __address.sin_family = AF_INET;
     __address.sin_addr.s_addr = INADDR_ANY;
     __address.sin_port = htons(__port);
     if (bind(__socket, (struct sockaddr *)&__address, sizeof(__address)) < 0)
     {
-        std::cerr << "Error: bind failed" << std::endl;
-        return (false);
+        throw std::runtime_error("Error: bind failed");
     }
    
    if (listen(__socket, 3) < 0)
     {
-         std::cerr << "Error: listen failed" << std::endl;
-         return (false);
+        throw std::runtime_error("Error: listen failed");
     };
     __spollfd.fd = __socket;
     __spollfd.events = POLLIN;
@@ -144,7 +139,6 @@ bool Server::run( void )
     __pollfds.push_back(__spollfd);// add the server socket to the pollfds vector, to keep track of it
     
     // infinite loop to keep the server running
-
     while (true)
     {
         int ret;
@@ -153,8 +147,7 @@ bool Server::run( void )
         // figure out how to add the client sockets to the pollfds vector sumultaneously
         if ( (ret = poll(__pollfds.data(), __pollfds.size(), -1)) < 0)
         {
-            std::cerr << "Error: poll failed" << std::endl;
-            return (false);
+            throw std::runtime_error("Error: poll failed");
         }
         //loop through the pollfds vector to check which socket has an event
 
@@ -172,12 +165,10 @@ bool Server::run( void )
                 int addrlen = sizeof(new_address);
                 if ((new_socket = accept(__socket, (struct sockaddr *)&new_address, (socklen_t*)&addrlen)) < 0)
                 {
-                    std::cerr << "Error: accept failed" << std::endl;
-                    return (false);
+                    throw std::runtime_error("Error: accept failed");
                 }
                 if (fcntl(__socket, F_SETFD, O_NONBLOCK)  < 0) {
-                    std::cerr << "Error: fcntl failed" << std::endl;
-                    return (false);
+                    throw std::runtime_error("Error: fcntl failed");
                 }
                 struct pollfd __NewClient;
                 __NewClient.fd = new_socket;
@@ -185,21 +176,17 @@ bool Server::run( void )
                 __pollfds.push_back(__NewClient);
                 Client NewClient = Client();
                 __NewConnections[__NewClient.fd] = NewClient;
-            }
-            else 
-            {
+            } else  {
                 int valread;
                 char buffer[1024] = {0};
-                if ((valread = read(__pollfds[i].fd, buffer, 1024)) < 0)
-                {
-                    std::cerr << "Error: read failed" << std::endl;
-                    return (false);
+                if ((valread = read(__pollfds[i].fd, buffer, 1024)) == -1) {
+                    throw std::runtime_error("Error: read failed");
                 }
                 if (valread == 0) // if the client disconnected
                 {
                     DeleteUser(__pollfds[i].fd);
                 }
-                else // this is just for testing, it should be parsed and executed
+                else 
                 {
                     std::string tmpBuffer = buffer;
                     if(__users.find(__pollfds[i].fd) != __users.end())
@@ -212,10 +199,7 @@ bool Server::run( void )
                             parseCommand(__pollfds[i].fd);
                             __users.find(__pollfds[i].fd)->second.setBuffer("");
                         }
-                    }
-                    else
-                    {
-
+                    } else {
                         std::string CurrentBuffer = __NewConnections.find(__pollfds[i].fd)->second.getBuffer();
                         CurrentBuffer+=buffer;
                         __NewConnections.find(__pollfds[i].fd)->second.setBuffer(CurrentBuffer);
@@ -229,13 +213,10 @@ bool Server::run( void )
                                     __Backtoline++;
                                 CurrentBuffer[i] = (char)tolower(CurrentBuffer[i]);
                             }
-                            if(__Backtoline == 1)
-                            {
+                            if(__Backtoline == 1) {
                                 CurrentBuffer = backslashR(CurrentBuffer);
                                 SetUserInf(ParceConnection(CurrentBuffer), __pollfds[i].fd);
-                            }
-                            else
-                            {
+                            } else {
                                 std::vector<std::pair<std::string, std::string> > cmds = ParceConnectionLine(CurrentBuffer);
                                 // for (size_t i = 0;i < cmds.size();i++)
                                 if(cmds.size() != 3) {

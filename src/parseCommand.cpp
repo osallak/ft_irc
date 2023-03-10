@@ -27,9 +27,9 @@ void    Server::parseCommand( int fd )
     for (size_t i = 0; i < command.size(); ++i){
         command[i] = (char)(tolower(command[i]));
     }
-    std::cout << "command: " << command << std::endl;
     res.erase(res.begin());
-    // for(size_t i = 0 ; i < res.size();i++)
+
+
     if (command == KICK)
         parseKick(res, fd);
     else if (command == "invite")

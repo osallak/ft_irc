@@ -59,7 +59,6 @@ void    Server::runBot(const std::string& command, int fd)
         char buffer[80];
         std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
         std::string current_time(buffer);
-        current_time += "\n";
         message = ":" + __users[fd].getNickname() + " PRIVMSG " + __users[fd].getNickname() + " :" + current_time + "\n";
     }
     

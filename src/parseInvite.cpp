@@ -12,9 +12,6 @@ void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
         __arg.push_back(":");
     for(size_t i = 0 ; i < __arg.size();i++)
         __arg[i] = backslashR(__arg[i]);
-    for(size_t i = 0 ; i < __arg.size();i++)
-        std::cout << "<<" <<__arg[i] << ">>" <<std::endl;
-    __arg[__arg.size() - 1] = backslashR(__arg[__arg.size() - 1]);
     if((__arg.size() == 1 && __arg[0] == ":" )|| GetUserId(__arg[0]) == -1)
     {
         if(send(__UserId,":* 404 * :No such nick name\n",28, 0) == -1)
@@ -48,7 +45,7 @@ void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
     else
     {
         std::string msg = "";
-        msg=":* 341 * :" + __users[__UserId].getUsername() + " " + __arg[0] + " " + __arg[1] + '\n';
+        msg=":* 341 * :" + __users[__UserId].getUsername() + " invite " + __arg[0] + " to " + __arg[1] + '\n';
         __ValRead = send(__UserId,msg.c_str(),msg.size(), 0);
         __channels[__arg[1]].SetInviteds(GetUserId(__arg[0]), __users[GetUserId(__arg[0])]);
     }

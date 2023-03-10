@@ -24,6 +24,11 @@ void Server::parsePart(std::vector<std::string>__arg,int __UserId)
         else if(channels[i][0] != '#')
            sendMessage(__UserId,":* 476 * :Bad Channel Mask\n");
         else
+        {
             __channels[channels[i]].eraseClient(__UserId);
+            if(__channels[channels[i]].getChannelClients().size() == 0)
+                __channels.erase(channels[i]);
+
+        }
     }
 }
