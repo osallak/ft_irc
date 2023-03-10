@@ -34,6 +34,12 @@
 # define JOIN "join"
 
 # define CHANNEL_PREFIX '#'
+# define PLUS '+'
+# define MINUS '-'
+# define MOD 'm'
+# define KEY 'k'
+# define INV 'i'
+# define CHANNEL_PREFIX '#'
 # define MAXPARAMS 14
 
 

@@ -273,7 +273,6 @@ std::vector<std::pair<std::string, std::string> > Server::ParceConnectionLine(st
 {
     cmd = trim(cmd);
     cmd = backslashR(cmd);
-    // std::cout << cmd << std::endl;
     std::vector<std::pair<std::string,std::string> >ret;
     std::size_t __found  = cmd.find("\n");
     std::vector<std::string>ConnectionInf(3);
@@ -283,9 +282,7 @@ std::vector<std::pair<std::string, std::string> > Server::ParceConnectionLine(st
     ConnectionInf[1] = cmd.substr(0,__found);
     ConnectionInf[2] = cmd.substr(__found + 1 , -1);
     for(unsigned int i = 0 ; i < 3;i++)
-    {
         ConnectionInf[i] = trim( ConnectionInf[i]);
-    }
     for(int i = 0 ; i < 3;i++)
     {
         __found = ConnectionInf[i].find(" ");
@@ -306,8 +303,11 @@ std::vector<std::pair<std::string, std::string> > Server::ParceConnectionLine(st
     }
     else if((ret[0].first != "pass" || ret[0].second != __password ) || ret[2].first != "nick" || ret[1].first != "user")
     {
-        ret.push_back(std::make_pair("error","error"));
+        if(ret[2].first != "nick" || ret[1].first != "nick")
+            ret.push_back(std::make_pair("error","error"));
     }
+    else if((ret[0].first != "pass" || ret[0].second != __password ) || ret[2].first != "nick" || ret[1].first != "user")
+        ret.push_back(std::make_pair("error","error"));
     return(ret);
 }
 
@@ -368,7 +368,6 @@ void    Server::__ListChannelsUserInvTo(int UserId)
     for (it = __channels.begin(); it != __channels.end(); ++it) {
         if(it->second.getInvited(UserId))
         {
-
             __ValRead = send(UserId,it->second.getChannelName().c_str(),it->second.getChannelName().size(),0);
             __ValRead = send(UserId,"\n",1,0);
             if(__ValRead == -1)
@@ -422,6 +421,7 @@ void Server::parseQuit(int __UserId)
 {
     DeleteUser(__UserId);
 }
+
 void Server::parsePart(std::vector<std::string>__arg,int __UserId)
 {
     int __ValRead = 0;
@@ -573,7 +573,7 @@ bool Server::run( void )
         std::cerr << "Error: setsockopt failed" << std::endl;
         return (false);
     }
-    if (fcntl(__socket, F_SETFD, O_NONBLOCK)  < 0)// check if this is the right way to do it
+    if (fcntl(__socket, F_SETFD, O_NONBLOCK)  < 0)
     {
         std::cerr << "Error: fcntl failed" << std::endl;
         return (false);
@@ -594,7 +594,7 @@ bool Server::run( void )
     };
     __spollfd.fd = __socket;
     __spollfd.events = POLLIN;
-    // __spollfd.revents = 0;
+    __spollfd.revents = 0;
     __pollfds.push_back(__spollfd);// add the server socket to the pollfds vector, to keep track of it
     
     // infinite loop to keep the server running
@@ -629,13 +629,16 @@ bool Server::run( void )
                     std::cerr << "Error: accept failed" << std::endl;
                     return (false);
                 }
+                if (fcntl(__socket, F_SETFD, O_NONBLOCK)  < 0) {
+                    std::cerr << "Error: fcntl failed" << std::endl;
+                    return (false);
+                }
                 struct pollfd __NewClient;
                 __NewClient.fd = new_socket;
                 __NewClient.events = POLLIN;
                 __pollfds.push_back(__NewClient);
                 Client NewClient = Client();
                 __NewConnections[__NewClient.fd] = NewClient;
-                
             }
             else 
             {
@@ -672,11 +675,9 @@ bool Server::run( void )
 
                         std::string CurrentBuffer = __NewConnections.find(__pollfds[i].fd)->second.getBuffer();
                         CurrentBuffer+=buffer;
-                        std::cout << "CurrentBuffer : " << CurrentBuffer << "\n";
                         __NewConnections.find(__pollfds[i].fd)->second.setBuffer(CurrentBuffer);
                         
                         CurrentBuffer =   __NewConnections.find(__pollfds[i].fd)->second.getBuffer();
-                        std::cout << "hi\n";
                         if(CurrentBuffer.find("\n") != std::string::npos)
                         {
                             int __Backtoline = 0;
@@ -694,11 +695,10 @@ bool Server::run( void )
                             }
                             else
                             {
-                                std::cout << "current buffer : |" << CurrentBuffer << "|\n";
+                                // std::cout << "current buffer : |" << CurrentBuffer << "|\n";
                                 std::vector<std::pair<std::string, std::string> > cmds = ParceConnectionLine(CurrentBuffer);
-                                for (size_t i = 0;i < cmds.size();i++)
-                                    std::cout << "|" << cmds[i].first << "|" << cmds[i].second << "|\n";
-                                std::cout << "size : " << cmds.size() << "\n";
+                                // for (size_t i = 0;i < cmds.size();i++)
+                                //     std::cout << "|" << cmds[i].first << "|" << cmds[i].second << "|\n";
                                 if(cmds.size() != 3)
                                 {
                                     if(send(__pollfds[i].fd,":* 667 * :Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0) == -1)
@@ -1051,9 +1051,9 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
             //fd of client
             i = it->second.getChannelClient(vec[2]);
             //plus or minus mode 
-            if (vec[1][0] == '+')
+            if (vec[1][0] == PLUS)
             {
-                if (vec[1][1] == 'i')
+                if (vec[1][1] == INV)
                 {
                     if (it->second.getChannelType() == 1)
                     {
@@ -1066,7 +1066,7 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                     send_msg(fd, message);
                     return ;
                 }
-                if (vec[1][1] == 'k')
+                if (vec[1][1] == KEY)
                 {
                     if (i != -1)
                     {
@@ -1089,7 +1089,7 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                         return ;
                     }
                 }
-                if (vec[1][1] == 'm')
+                if (vec[1][1] == MOD)
                 {
                     if (vec.size() == 3)
                     {
@@ -1120,11 +1120,10 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                         return ;
                     }
                 }
-                // if (vec[1][1] == '')
             }
-            else if (vec[1][0] == '-')
+            else if (vec[1][0] == MINUS)
             {
-                if (vec[1][1] == 'i')
+                if (vec[1][1] == INV)
                 {
                     if (it->second.getChannelType() == 0)
                     {
@@ -1137,7 +1136,7 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                     send_msg(fd, message);
                     return ;
                 }
-                if (vec[1][1] == 'k' && i != -1)
+                if (vec[1][1] == KEY && i != -1)
                 {
                     if (vec.size() == 2)
                     {
@@ -1154,7 +1153,7 @@ void    Server::parseMode(std::vector<std::string> &vec, int fd)
                         return ;
                     }
                 }
-                if (vec[1][1] == 'm')
+                if (vec[1][1] == MOD)
                 {
                     if (vec.size() == 3)
                     {
@@ -1253,8 +1252,8 @@ void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
     std::string message = "";
     if (vec.size() == 0)
     {
-         message = ":" + __users[fd].getNickname() + " 461 " + "PRIVMSG " + "Not enough parameters\n";
-         send(fd, message.c_str(), message.size(), 0);
+        message = ":" + __users[fd].getNickname() + " 461 " + "PRIVMSG " + "Not enough parameters\n";
+        send(fd, message.c_str(), message.size(), 0);
         return ;
     }
     if (vec.size() < 2)
@@ -1263,35 +1262,27 @@ void    Server::parsePrivmsg(std::vector<std::string> &vec, int fd)
         send(fd, message.c_str(), message.size(), 0);
         return ;
     }
-    
     std::string msg = "";
-
     if (vec[1][0] != ':')
         msg += ":";
-    
     for (size_t i = 1; i < vec.size(); ++i)
     {
         msg += vec[i];
         if (i != vec.size() - 1)
             msg += " ";
     }
-
     std::string targets = vec[0];
     std::vector<std::string> targetsVec;
-
     while (targets.find(',') != std::string::npos)
     {
         targetsVec.push_back(targets.substr(0, targets.find(',')));
         targets.erase(0, targets.find(',') + 1);
     }
     targetsVec.push_back(targets);
-
-   for (size_t i = 0; i < targetsVec.size(); ++i)
-   {
+    for (size_t i = 0; i < targetsVec.size(); ++i)
+    {
         if (targetsVec[i][0] == CHANNEL_PREFIX) {
-
             std::map<std::string, Channel>::iterator it = __channels.find(targetsVec[i]);// search for channel in the map
-
             if ( it == __channels.end() ) {
                 message = ":" + __users[fd].getNickname() + " 403 " + "PRIVMSG " + "No such channel\n";
                 send(fd, message.c_str(), message.size(), 0);
@@ -1420,13 +1411,11 @@ void    Server::parseList(std::vector<std::string> &vec, int fd)
 
     for (size_t i = 0; i < chns.size(); ++i) {
         std::map<std::string, Channel>::iterator it = __channels.find(chns[i]);
-
         if (it == __channels.end()) {
             message = ":" + __users[fd].getNickname() + " 403 " + "LIST " + "No such channel\n";
             send(fd, message.c_str(), message.size(), 0);
             return ;
         }
-        
         Channel channel = it->second;
         if (channel.getChannelType() == 1 && isInChannel(channel, fd) == false)
         {
@@ -1442,7 +1431,6 @@ void    Server::parseList(std::vector<std::string> &vec, int fd)
 void    Server::parseKick(std::vector<std::string> &vec, int fd)
 {
     std::string message;
-
     if (vec.size() == 0) {
         message = ":" + __users[fd].getNickname() + " 461 " + "KICK " + "Not enough parameters\n";
         send(fd, message.c_str(), message.size(), 0);
@@ -1465,7 +1453,6 @@ void    Server::parseKick(std::vector<std::string> &vec, int fd)
         send(fd, message.c_str(), message.size(), 0);
         return ;
     }
-
     std::vector<int>::iterator it3 = std::find(channel.getChannelModerator().begin(), channel.getChannelModerator().end(), fd);
     if (it3 == channel.getChannelModerator().end())
     {
@@ -1563,31 +1550,25 @@ void    Server::parseNotice(std::vector<std::string> &vec, int fd)
         return ;
     if (vec.size() < 2)
         return ;
-    
     std::string msg = "";
-
     if (vec[1][0] != ':')
         msg += ":";
-    
     for (size_t i = 1; i < vec.size(); ++i)
     {
         msg += vec[i];
         if (i != vec.size() - 1)
             msg += " ";
     }
-
     std::string targets = vec[0];
     std::vector<std::string> targetsVec;
-
     while (targets.find(',') != std::string::npos)
     {
         targetsVec.push_back(targets.substr(0, targets.find(',')));
         targets.erase(0, targets.find(',') + 1);
     }
     targetsVec.push_back(targets);
-
-   for (size_t i = 0; i < targetsVec.size(); ++i)
-   {
+    for (size_t i = 0; i < targetsVec.size(); ++i)
+    {
         if (targetsVec[i][0] == CHANNEL_PREFIX) {
 
             std::map<std::string, Channel>::iterator it = __channels.find(targetsVec[i]);// search for channel in the map
