@@ -2,8 +2,8 @@ NAME = bin/ircserv
 
 SRC =  Server.cpp main.cpp  Client.cpp Channel.cpp utils.cpp
 CC = c++
-CFLAGS = -Wall -Wextra -Werror -c  -Iinclude 
-LFLAGS = 
+CFLAGS = -Wall -Wextra -Werror -c  -Iinclude -fsanitize=address -g
+LFLAGS = -fsanitize=address
 
 BLUE = \033[0;34m
 GREEN = \033[0;32m

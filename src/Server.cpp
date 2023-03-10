@@ -399,11 +399,8 @@ void Server::parseNick(std::vector<std::string>__arg,int __UserId)
     int __ValRead = 0;
     for(size_t i = 0 ; i < __arg.size();i++)
         __arg[i] = backslashR(__arg[i]);
-    for(size_t i = 0 ; i < __arg.size();i++)
-        std::cout << "|" <<__arg[i] << "|" <<std::endl;
     if(!__arg.size())
         __arg.push_back(":");
-    std::cout << "|"<<__arg[0] << "|" << std::endl;
     if(__arg[0] == ":")
         __ValRead = send(__UserId,":* 431 * No nickname given\n",27,0);
     else if(__users.find(GetUserId(__arg[0])) != __users.end() && __arg[0] != __users[__UserId].getNickname())
@@ -428,7 +425,14 @@ void Server::parsePart(std::vector<std::string>__arg,int __UserId)
     for(size_t i = 0 ; i < __arg.size();i++)
         __arg[i] = backslashR(__arg[i]);
     if(!__arg.size())
-        __ValRead = send(__UserId,":* 461 * :Not enough parameters\n",32, 0);
+    {
+        if(send(__UserId,":* 461 * :Not enough parameters\n",32, 0) == -1)
+        {
+            std::cout << "send() Failed\n";
+            exit(0);
+        }
+        return;
+    }
     std::vector<std::string>channels = split(__arg[0],',');
     for(size_t i = 0; i < channels.size();i++)
     {
@@ -676,7 +680,6 @@ bool Server::run( void )
                         std::string CurrentBuffer = __NewConnections.find(__pollfds[i].fd)->second.getBuffer();
                         CurrentBuffer+=buffer;
                         __NewConnections.find(__pollfds[i].fd)->second.setBuffer(CurrentBuffer);
-                        
                         CurrentBuffer =   __NewConnections.find(__pollfds[i].fd)->second.getBuffer();
                         if(CurrentBuffer.find("\n") != std::string::npos)
                         {
@@ -698,7 +701,6 @@ bool Server::run( void )
                                 // std::cout << "current buffer : |" << CurrentBuffer << "|\n";
                                 std::vector<std::pair<std::string, std::string> > cmds = ParceConnectionLine(CurrentBuffer);
                                 // for (size_t i = 0;i < cmds.size();i++)
-                                //     std::cout << "|" << cmds[i].first << "|" << cmds[i].second << "|\n";
                                 if(cmds.size() != 3)
                                 {
                                     if(send(__pollfds[i].fd,":* 667 * :Enter PASS <password>, NICK <nickname>, USER <user>\n",62,0) == -1)
@@ -709,18 +711,9 @@ bool Server::run( void )
                                 }
                                 else
                                 {
-                                    // std::string str = "";
-                                    // for(size_t i = 0 ; i < cmds[1].second.size();i++)
-                                    // {
-                                    //     if(cmds[1].second[i] == ' ')
-                                    //         break;
-                                    //     else
-                                    //         str.push_back(cmds[1].second[i]);
-                                    // }
                                     __NewConnections.find(__pollfds[i].fd)->second.setPassword(cmds[0].second);
                                     __NewConnections.find(__pollfds[i].fd)->second.setUsername(cmds[1].second);
                                     __NewConnections.find(__pollfds[i].fd)->second.setNickname(cmds[2].second);
-                                    // __users[__pollfds[i].fd] = __NewConnections.find(__pollfds[i].fd)->second;
                                     std::string msg = ":" + std::string("irc.1337.ma") + " 001 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + "!~" + "yahya" + "@" + "127.0.0.1" + "\r\n";;
                                     if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
                                     {
@@ -885,7 +878,7 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
     std::vector<std::string>                    chn;
     std::vector<std::string>                    key;
     std::map<std::string,Channel>::iterator     it;
-    std::map<int,Client>::iterator              inv;
+    bool                                         inv;
     std::string                                 str;
     std::string                                 message;
     size_t                                      i;
@@ -907,11 +900,15 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
         while (1)
         {
             it = __channels.find(chn[i]);
+            if(it != __channels.end())
+            {
+                std::cout << "{{" <<  __channels.find(chn[i])->second.getChannelInvited().size()  << "}}"<< std::endl;
+            }
             if (it == __channels.end())
             {
                 __channels[chn[i]].setChannelName(chn[i]);
                 __channels[chn[i]].setChannelTopic("No topic");
-                __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+                __channels[chn[i]].setChannelClients(fd, __users[fd].getNickname());
                 __channels[chn[i]].setChannelModerator(fd);
                 __channels[chn[i]].setChannelType(0);
                 __channels[chn[i]].setChannelPass(0);
@@ -943,17 +940,19 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                     send_msg(fd, message);
                     break ;
                 }
-                inv = it->second.getChannelInvited().find(fd);
-                if (inv != it->second.getChannelInvited().end() && vec.size() != 2)
+                inv = it->second.getInvited(fd);
+                if (inv && vec.size() != 2)
                 {
-                    __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+
+                    // std::cout << fd << "|" << inv->second.getNickname() << std::endl;
+                    __channels[chn[i]].setChannelClients(fd, __users[fd].getNickname());
                     message = ":" + GetUserName(fd) + " JOIN " + chn[i] + "\n";
                     send_msg(fd, message);
                     break ;
                 }
                 if (it->second.getChannelPass() == 1)
                 {
-                    if (it->second.getChannelPassword() != key[k++])
+                    if ((k < key.size() && it->second.getChannelPassword() != key[k++]) || key.size() == 0)
                     {
                         message = ":" + GetUserName(fd) + " 475 * Cannot join channel (+k)\n";
                         send_msg(fd, message);
@@ -961,7 +960,7 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                     }
                     else
                     {
-                        __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+                        __channels[chn[i]].setChannelClients(fd, __users[fd].getNickname());
                         message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
                         send_msg(fd, message);
                         break ;
@@ -969,7 +968,7 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                 }
                 else
                 {
-                    __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+                    __channels[chn[i]].setChannelClients(fd, __users[fd].getNickname());
                     message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
                     send_msg(fd, message);
                     break ;
@@ -987,7 +986,7 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                     }
                     else
                     {
-                        __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+                        __channels[chn[i]].setChannelClients(fd, __users[fd].getNickname());
                         message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
                         send_msg(fd, message);
                         break ;
@@ -1001,7 +1000,7 @@ void    Server::parseJoin(std::vector<std::string> &vec, int fd)
                         send_msg(fd, message);
                         break ;
                     }
-                    __channels[chn[i]].setChannelClients(fd, __users[fd].getUsername());
+                    __channels[chn[i]].setChannelClients(fd, __users[fd].getNickname());
                     message = ":" + GetUserName(fd) + " 332 JOIN :" + __channels[chn[i]].getChannelTopic() + "\n";
                     send_msg(fd, message);
                     break ;
