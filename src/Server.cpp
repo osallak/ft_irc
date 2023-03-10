@@ -426,11 +426,15 @@ void Server::parsePart(std::vector<std::string>__arg,int __UserId)
         __arg[i] = backslashR(__arg[i]);
     if(!__arg.size())
     {
+<<<<<<< HEAD
         if(send(__UserId,":* 461 * :Not enough parameters\n",32, 0) == -1)
         {
             std::cout << "send() Failed\n";
             exit(0);
         }
+=======
+        __ValRead = send(__UserId,":* 461 * :Not enough parameters\n",32, 0);
+>>>>>>> cd122ad018fb12713f3a8c331289e080ec0c22a5
         return;
     }
     std::vector<std::string>channels = split(__arg[0],',');
@@ -447,7 +451,7 @@ void Server::parsePart(std::vector<std::string>__arg,int __UserId)
             __channels[channels[i]].eraseClient(__UserId);
         if(__ValRead == -1)
         {
-            std::cout << "send() failde\n";
+            std::cout << "send() failed\n";
             exit(0);
         }
         __ValRead = 0;
@@ -467,7 +471,7 @@ void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
     {
         if(send(__UserId,":* 404 * :No such nick name\n",28, 0) == -1)
         {
-            std::cout << "send() failde\n";
+            std::cout << "send() failed\n";
             exit(0);
         }
         return;
@@ -476,7 +480,7 @@ void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
     {
         if(send(__UserId,":* 403 * :No such channel\n",26, 0) == -1)
         {
-            std::cout << "sned() failde\n";
+            std::cout << "sned() failed\n";
             exit(0);
         }
         return;
@@ -485,7 +489,7 @@ void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
     {
         if(send(__UserId,":* 476 * :Bad Channel Mask\n",27, 0) == -1)
         {
-            std::cout << "send() failde\n";
+            std::cout << "send() failed\n";
             exit(0);
         }
         return;
@@ -502,7 +506,7 @@ void Server::parseInvite(std::vector<std::string>__arg,int __UserId)
     }
     if(__ValRead == - 1)
     {
-        std::cout << "send() failde\n";
+        std::cout << "send() failed\n";
         exit(0);
     }
 }
@@ -540,7 +544,7 @@ void Server::parseTopic(std::vector<std::string>__arg,int __UserId)
     }
     if(__ValRead == - 1)
     {
-        std::cout << "send() failde\n";
+        std::cout << "send() failed\n";
         exit(0);
     }
 }
@@ -851,7 +855,9 @@ void    Server::parseCommand( int fd )
         runBot(command, fd);
     else if (command == "notice")
         parseNotice(res, fd);
-    else {
+    else if (command == "ping"){
+        parsePing(res, fd);
+    }else {
         std::string msg = "421 " + __users[fd].getNickname() + " " + command + " :Unknown command\n";
         send(fd, msg.c_str(), msg.size(), 0);
     }
@@ -1594,4 +1600,23 @@ void    Server::parseNotice(std::vector<std::string> &vec, int fd)
             }
         }
     }
+}
+
+
+void    Server::parsePing(std::vector<std::string> &vec, int fd)
+{
+    std::string message = "";
+    if (vec.size() < 2)
+        return ;
+    std::string msg = "";
+    if (vec[1][0] != ':')
+        msg += ":";
+    for (size_t i = 1; i < vec.size(); ++i)
+    {
+        msg += vec[i];
+        if (i != vec.size() - 1)
+            msg += " ";
+    }
+    message = "PONG " + msg + "\n";
+    send(fd, message.c_str(), message.size(), 0);
 }
