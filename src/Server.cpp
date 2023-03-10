@@ -118,48 +118,17 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
                 }
                 if(!__NewConnections.find(UserId)->second.getPassword().empty() && !__NewConnections.find(UserId)->second.getUsername().empty())
                 {
-                    __NewConnections.find(UserId)->second.setNickname(cmd.second);
-                    std::string msg = ":" + std::string("irc.1337.ma") + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!~" + "yahya" + "@" + "127.0.0.1" + "\r\n";;
+                     __NewConnections.find(UserId)->second.setNickname(cmd.second);
+                    std::string msg = ":" + __hostname + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!~" + __NewConnections.find(UserId)->second.getNickname() + "@" + "127.0.0.1\r\n";
+                    msg += ":" + __hostname + " 002 " +  __NewConnections.find(UserId)->second.getNickname() + " :Your host is " + __hostname + ", running version leet-irc 1.0.0\r\n";
+                    msg += ":" + __hostname + " 003 " +  __NewConnections.find(UserId)->second.getNickname() + " :This server has been started Wed Oct 12 2022\r\n";
+                    msg += ":" + __hostname + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " " + __hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
+                    msg += ":" + __hostname + " 251 " + __NewConnections.find(UserId)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
+                    msg += ":" + __hostname + " 375 " + __NewConnections.find(UserId)->second.getNickname() + " :- " + __hostname + " Message of the day -\r\n";
+                    msg += ":" + __hostname + " 376 " + __NewConnections.find(UserId)->second.getNickname() + " :End of MOTD command\r\n";
                     if(send(UserId,msg.c_str(),msg.size(),0) == -1)
                     {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":" + std::string("irc.1337.ma") + " 002 " +  __NewConnections.find(UserId)->second.getNickname() + " :Your host is " + "irc.1337.ma" + ", running version 1.0\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":" + std::string("irc.1337.ma") + " 003 " +  __NewConnections.find(UserId)->second.getNickname() + " :This server was created Wed Oct 12 2022 at 20:31:55 UTC\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    // msg = ":" + std::string("irc.1337.ma") + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " " + __hostname + " 1.0\r\n";
-                    msg = ":" + std::string("irc.1337.ma") + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " irc.1337.ma leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":irc.1337.ma 251 " +  __NewConnections.find(UserId)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":irc.1337.ma 375 " + __NewConnections.find(UserId)->second.getNickname() + " :- irc.1337.ma Message of the day -\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":irc.1337.ma 376 " + __NewConnections.find(UserId)->second.getNickname() + " :End of MOTD command\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
+                        std::cout << "send() failed\n";
                         exit(0);
                     }
                     __NewConnections.find(UserId)->second.setIsLogged(true);
@@ -202,50 +171,19 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
                 }
                 if(!__NewConnections.find(UserId)->second.getPassword().empty() && !__NewConnections.find(UserId)->second.getNickname().empty())
                 {
-                    std::string msg = ":" + std::string("irc.1337.ma") + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!~" + "yahya" + "@" + "127.0.0.1" + "\r\n";;
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":" + std::string("irc.1337.ma") + " 002 " +  __NewConnections.find(UserId)->second.getNickname() + " :Your host is " + "irc.1337.ma" + ", running version 1.0\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":" + std::string("irc.1337.ma") + " 003 " +  __NewConnections.find(UserId)->second.getNickname() + " :This server was created Wed Oct 12 2022 at 20:31:55 UTC\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    // msg = ":" + std::string("irc.1337.ma") + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " " + __hostname + " 1.0\r\n";
-                    msg = ":" + std::string("irc.1337.ma") + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " irc.1337.ma leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":irc.1337.ma 251 " +  __NewConnections.find(UserId)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":irc.1337.ma 375 " + __NewConnections.find(UserId)->second.getNickname() + " :- irc.1337.ma Message of the day -\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
-                    msg = ":irc.1337.ma 376 " + __NewConnections.find(UserId)->second.getNickname() + " :End of MOTD command\r\n";
-                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
-                    {
-                        std::cout << "send() flaid\n";
-                        exit(0);
-                    }
                     __NewConnections.find(UserId)->second.setUsername(cmd.second);
+                    std::string msg = ":" + __hostname + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!~" + __NewConnections.find(UserId)->second.getNickname() + "@" + "127.0.0.1\r\n";
+                    msg += ":" + __hostname + " 002 " +  __NewConnections.find(UserId)->second.getNickname() + " :Your host is " + __hostname + ", running version leet-irc 1.0.0\r\n";
+                    msg += ":" + __hostname + " 003 " +  __NewConnections.find(UserId)->second.getNickname() + " :This server has been started Wed Oct 12 2022\r\n";
+                    msg += ":" + __hostname + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " " + __hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
+                    msg += ":" + __hostname + " 251 " + __NewConnections.find(UserId)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
+                    msg += ":" + __hostname + " 375 " + __NewConnections.find(UserId)->second.getNickname() + " :- " + __hostname + " Message of the day -\r\n";
+                    msg += ":" + __hostname + " 376 " + __NewConnections.find(UserId)->second.getNickname() + " :End of MOTD command\r\n";
+                    if(send(UserId,msg.c_str(),msg.size(),0) == -1)
+                    {
+                        std::cout << "send() failed\n";
+                        exit(0);
+                    }
                     __NewConnections.find(UserId)->second.setIsLogged(true);
                     __users[UserId] = __NewConnections.find(UserId)->second;
                 }
@@ -426,15 +364,11 @@ void Server::parsePart(std::vector<std::string>__arg,int __UserId)
         __arg[i] = backslashR(__arg[i]);
     if(!__arg.size())
     {
-<<<<<<< HEAD
         if(send(__UserId,":* 461 * :Not enough parameters\n",32, 0) == -1)
         {
             std::cout << "send() Failed\n";
             exit(0);
         }
-=======
-        __ValRead = send(__UserId,":* 461 * :Not enough parameters\n",32, 0);
->>>>>>> cd122ad018fb12713f3a8c331289e080ec0c22a5
         return;
     }
     std::vector<std::string>channels = split(__arg[0],',');
@@ -715,72 +649,30 @@ bool Server::run( void )
                                 }
                                 else
                                 {
+                                    std::string str = "";
+                                    for(size_t i = 0 ; i < cmds[1].second.size();i++)
+                                    {
+                                        if(cmds[1].second[i] == ' ')
+                                            break;
+                                        else
+                                            str.push_back(cmds[1].second[i]);
+                                    }
                                     __NewConnections.find(__pollfds[i].fd)->second.setPassword(cmds[0].second);
-                                    __NewConnections.find(__pollfds[i].fd)->second.setUsername(cmds[1].second);
+                                    __NewConnections.find(__pollfds[i].fd)->second.setUsername(str);
                                     __NewConnections.find(__pollfds[i].fd)->second.setNickname(cmds[2].second);
-                                    std::string msg = ":" + std::string("irc.1337.ma") + " 001 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + "!~" + "yahya" + "@" + "127.0.0.1" + "\r\n";;
-                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    {
-                                        std::cout << "send() flaid\n";
-                                        exit(0);
-                                    }
-                                    msg = ":" + std::string("irc.1337.ma") + " 002 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :Your host is " + "irc.1337.ma" + ", running version 1.0\r\n";
-                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    {
-                                        std::cout << "send() flaid\n";
-                                        exit(0);
-                                    }
-                                    msg = ":" + std::string("irc.1337.ma") + " 003 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :This server was created Wed Oct 12 2022 at 20:31:55 UTC\r\n";
-                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    {
-                                        std::cout << "send() flaid\n";
-                                        exit(0);
-                                    }
-                                    // msg = ":" + std::string("irc.1337.ma") + " 004 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " " + __hostname + " 1.0\r\n";
-                                    msg = ":" + std::string("irc.1337.ma") + " 004 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " irc.1337.ma leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
-                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    {
-                                        std::cout << "send() flaid\n";
-                                        exit(0);
-                                    }
-                                    msg = ":irc.1337.ma 251 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
-                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    {
-                                        std::cout << "send() flaid\n";
-                                        exit(0);
-                                    }
-                                    msg = ":irc.1337.ma 375 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :- irc.1337.ma Message of the day -\r\n";
-                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    {
-                                        std::cout << "send() flaid\n";
-                                        exit(0);
-                                    }
-                                    msg = ":irc.1337.ma 376 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :End of MOTD command\r\n";
-                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    {
-                                        std::cout << "send() flaid\n";
-                                        exit(0);
-                                    }
-                                    __NewConnections.find(__pollfds[i].fd)->second.setIsLogged(true);
                                     __users[__pollfds[i].fd] = __NewConnections.find(__pollfds[i].fd)->second;
-                                    // msg = ":irc.1337.ma 251 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
-                                    // if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    // {
-                                    //     std::cout << "send() flaid\n";
-                                    //     exit(0);
-                                    // }
-                                    // msg = ":irc.1337.ma 375 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :- irc.1337.ma Message of the day -\r\n";
-                                    // if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    // {
-                                    //     std::cout << "send() flaid\n";
-                                    //     exit(0);
-                                    // }
-                                    // msg = ":irc.1337.ma 376 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :End of MOTD command\r\n";
-                                    // if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
-                                    // {
-                                    //     std::cout << "send() flaid\n";
-                                    //     exit(0);
-                                    // }
+                                    std::string msg = ":" + __hostname + " 001 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + "!~" + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + "@" + "127.0.0.1\r\n";
+                                    msg += ":" + __hostname + " 002 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :Your host is " + __hostname + ", running version leet-irc 1.0.0\r\n";
+                                    msg += ":" + __hostname + " 003 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :This server has been started Wed Oct 12 2022\r\n";
+                                    msg += ":" + __hostname + " 004 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " " + __hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
+                                    msg += ":" + __hostname + " 251 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
+                                    msg += ":" + __hostname + " 375 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :- " + __hostname + " Message of the day -\r\n";
+                                    msg += ":" + __hostname + " 376 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :End of MOTD command\r\n";
+                                    if(send(__pollfds[i].fd,msg.c_str(),msg.size(),0) == -1)
+                                    {
+                                        std::cout << "send() failed\n";
+                                        exit(0);
+                                    }
                                 }
                             }
                             __NewConnections.find(__pollfds[i].fd)->second.setBuffer("");
