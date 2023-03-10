@@ -42,12 +42,7 @@
 # define CHANNEL_PREFIX '#'
 # define MAXPARAMS 14
 
-
-
-/*
-LIST//TODO: LIST
-KICK
-
-*/
-// this file is for the common functions, classes, etc. that are used in multiple files
-// for example, the error functions...
+void        sendMessage(int fd, std::string msg);
+std::string backslashR(const std::string& str);
+std::string trim(const std::string& str);
+std::vector<std::string>    split(std::string &line, char c);

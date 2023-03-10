@@ -1,9 +1,11 @@
 NAME = bin/ircserv
 
-SRC =  Server.cpp main.cpp  Client.cpp Channel.cpp utils.cpp
+SRC =  Channel.cpp Server.cpp  main.cpp parseInvite.cpp parseKick.cpp parseMode.cpp parseNick.cpp parsePart.cpp parsePrivmsg.cpp parseTopic.cpp utils.cpp\
+	   Client.cpp authentication.cpp parseCommand.cpp parseJoin.cpp parseList.cpp parseNames.cpp parseNotice.cpp parsePing.cpp parseQuit.cpp runBot.cpp 
+
 CC = c++
-CFLAGS = -Wall -Wextra -Werror -c  -Iinclude -fsanitize=address -g
-LFLAGS = -fsanitize=address
+CFLAGS = -Wall -Wextra -Werror -c  -Iinclude  -std=c++98
+LFLAGS = 
 
 BLUE = \033[0;34m
 GREEN = \033[0;32m

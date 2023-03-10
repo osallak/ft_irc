@@ -46,14 +46,10 @@ class Server{
         std::string            getPassword() const;
         void                   setPassword(std::string password);
         bool                   run( void );
-        void                   disconnect( void );
-        int                    authentification( void );
-        std::string            getCommand( void );
         std::pair<std::string,std::string> ParceConnection(std::string cmd);
         std::vector<std::pair<std::string, std::string> > ParceConnectionLine(std::string cmd);
         void                    SetUserInf(std::pair<std::string,std::string> cmd, int UserId);
 
-        std::vector<std::string>    split(std::string &, char);
         // void                        parseKick( std::vector<std::string> &, int);
         void                        parseJoin( std::vector<std::string> &, int);
         void                        parseMode( std::vector<std::string> &, int);
@@ -64,7 +60,6 @@ class Server{
         void                   parseInvite(std::vector<std::string>__argm,int __UserId);
         int                   GetUserId(std::string UserName);
         bool                    isInChannel(Channel &channel, int fd) const;
-        void                   __ListChannelsUserInvTo(int UserId);
         void                    parseTopic(std::vector<std::string>__arg,int __UserId);
         void                    parsePart(std::vector<std::string>__arg,int __UserId);
         void                    parseQuit(int __UserId);
@@ -75,7 +70,6 @@ class Server{
         void                    runBot(const std::string& ,int);
         void                    parseNick(std::vector<std::string> , int fd);
         std::string             GetUserName(int fd);
-        void                    sendMessage(int fd, std::string msg);
         int                     IsModerator(Channel &channel, std::string username);
         void                    RemoveModerator(Channel &channel, std::string username);
         void                    parsePing(std::vector<std::string> &, int fd);
