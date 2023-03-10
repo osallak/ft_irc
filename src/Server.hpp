@@ -73,6 +73,7 @@ class Server{
         int                     IsModerator(Channel &channel, std::string username);
         void                    RemoveModerator(Channel &channel, std::string username);
         void                    parsePing(std::vector<std::string> &, int fd);
+        void                    displayWelcomeMessage(int fd) const;
 };
 
 

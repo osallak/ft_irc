@@ -50,3 +50,15 @@ std::vector<std::string>    split(std::string &line, char c)
     return (vec);
 }
 
+void Server::displayWelcomeMessage(int fd) const
+{
+    int i = __currentNdx;
+    std::string msg = ":" + __hostname + " 001 " +  __NewConnections.find(fd)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(fd)->second.getNickname() + "!~" + __NewConnections.find(fd)->second.getNickname() + "@" + "127.0.0.1\r\n";
+    msg += ":" + __hostname + " 002 " +  __NewConnections.find(fd)->second.getNickname() + " :Your host is " + __hostname + ", running version leet-irc 1.0.0\r\n";
+    msg += ":" + __hostname + " 003 " +  __NewConnections.find(fd)->second.getNickname() + " :This server has been started Wed Oct 12 2022\r\n";
+    msg += ":" + __hostname + " 004 " +  __NewConnections.find(fd)->second.getNickname() + " " + __hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
+    msg += ":" + __hostname + " 251 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :There are " +  std::to_string(__users.size() + 1) + " users and 1 bot on 1 servers\r\n";
+    msg += ":" + __hostname + " 375 " + __NewConnections.find(fd)->second.getNickname() + " :- " + __hostname + " Message of the day -\r\n";
+    msg += ":" + __hostname + " 376 " + __NewConnections.find(fd)->second.getNickname() + " :End of MOTD command\r\n";
+    sendMessage(fd,msg);
+}

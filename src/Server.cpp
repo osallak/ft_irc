@@ -234,14 +234,7 @@ bool Server::run( void )
                                     __NewConnections.find(__pollfds[i].fd)->second.setUsername(str);
                                     __NewConnections.find(__pollfds[i].fd)->second.setNickname(cmds[2].second);
                                     __users[__pollfds[i].fd] = __NewConnections.find(__pollfds[i].fd)->second;
-                                    std::string msg = ":" + __hostname + " 001 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + "!~" + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + "@" + "127.0.0.1\r\n";
-                                    msg += ":" + __hostname + " 002 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :Your host is " + __hostname + ", running version leet-irc 1.0.0\r\n";
-                                    msg += ":" + __hostname + " 003 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :This server has been started Wed Oct 12 2022\r\n";
-                                    msg += ":" + __hostname + " 004 " +  __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " " + __hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
-                                    msg += ":" + __hostname + " 251 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
-                                    msg += ":" + __hostname + " 375 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :- " + __hostname + " Message of the day -\r\n";
-                                    msg += ":" + __hostname + " 376 " + __NewConnections.find(__pollfds[i].fd)->second.getNickname() + " :End of MOTD command\r\n";
-                                    sendMessage(__pollfds[i].fd,msg);
+                                    displayWelcomeMessage(__pollfds[i].fd);
                                 }
                             }
                             __NewConnections.find(__pollfds[i].fd)->second.setBuffer("");

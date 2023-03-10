@@ -38,14 +38,7 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
                 }
                 if(!__NewConnections.find(UserId)->second.getPassword().empty() && !__NewConnections.find(UserId)->second.getUsername().empty()) {
                      __NewConnections.find(UserId)->second.setNickname(cmd.second);
-                    std::string msg = ":" + __hostname + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!~" + __NewConnections.find(UserId)->second.getNickname() + "@" + "127.0.0.1\r\n";
-                    msg += ":" + __hostname + " 002 " +  __NewConnections.find(UserId)->second.getNickname() + " :Your host is " + __hostname + ", running version leet-irc 1.0.0\r\n";
-                    msg += ":" + __hostname + " 003 " +  __NewConnections.find(UserId)->second.getNickname() + " :This server has been started Wed Oct 12 2022\r\n";
-                    msg += ":" + __hostname + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " " + __hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
-                    msg += ":" + __hostname + " 251 " + __NewConnections.find(UserId)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
-                    msg += ":" + __hostname + " 375 " + __NewConnections.find(UserId)->second.getNickname() + " :- " + __hostname + " Message of the day -\r\n";
-                    msg += ":" + __hostname + " 376 " + __NewConnections.find(UserId)->second.getNickname() + " :End of MOTD command\r\n";
-                    sendMessage(UserId,msg);
+                    displayWelcomeMessage(UserId);
                     __NewConnections.find(UserId)->second.setIsLogged(true);
                     __users[UserId] = __NewConnections.find(UserId)->second;
                 } else
@@ -69,14 +62,7 @@ void    Server::SetUserInf(std::pair<std::string,std::string> cmd, int UserId)
                 if(!__NewConnections.find(UserId)->second.getPassword().empty() && !__NewConnections.find(UserId)->second.getNickname().empty())
                 {
                     __NewConnections.find(UserId)->second.setUsername(cmd.second);
-                    std::string msg = ":" + __hostname + " 001 " +  __NewConnections.find(UserId)->second.getNickname() +  " :Welcome to the Internet Relay Network " + __NewConnections.find(UserId)->second.getNickname() + "!~" + __NewConnections.find(UserId)->second.getNickname() + "@" + "127.0.0.1\r\n";
-                    msg += ":" + __hostname + " 002 " +  __NewConnections.find(UserId)->second.getNickname() + " :Your host is " + __hostname + ", running version leet-irc 1.0.0\r\n";
-                    msg += ":" + __hostname + " 003 " +  __NewConnections.find(UserId)->second.getNickname() + " :This server has been started Wed Oct 12 2022\r\n";
-                    msg += ":" + __hostname + " 004 " +  __NewConnections.find(UserId)->second.getNickname() + " " + __hostname + " leet-irc 1.0.0 aioOrsw aovimntklbeI\r\n";
-                    msg += ":" + __hostname + " 251 " + __NewConnections.find(UserId)->second.getNickname() + " :There are 2 users and 0 services on 1 servers\r\n";
-                    msg += ":" + __hostname + " 375 " + __NewConnections.find(UserId)->second.getNickname() + " :- " + __hostname + " Message of the day -\r\n";
-                    msg += ":" + __hostname + " 376 " + __NewConnections.find(UserId)->second.getNickname() + " :End of MOTD command\r\n";
-                    sendMessage(UserId,msg);
+                    displayWelcomeMessage(UserId);
                     __NewConnections.find(UserId)->second.setIsLogged(true);
                     __users[UserId] = __NewConnections.find(UserId)->second;
                 }
