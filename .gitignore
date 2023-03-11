@@ -3,7 +3,6 @@ a.out*
 *.o
 *.out
 TODO
-=======
 .vscode/
 a.out*
 *.o
