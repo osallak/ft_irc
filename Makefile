@@ -39,5 +39,6 @@ fclean: clean
 	@/bin/rm -rf $(NAME)
 	@echo "$(RED)$(NAME) removed$(NC)"
 
+//this is a comment
 
 re : fclean $(NAME)

@@ -27,40 +27,41 @@ void    insertJokes(std::vector<std::string>& jokes)
 
 void    Server::runBot(const std::string& command, int fd)
 {
-    std::vector<std::string> jokes;
-
-    insertJokes(jokes);
-
-    std::string message;
-
-    if (command == "/joke")
-    {
-        std::string  res = "";
-        int status = system("which curl > /dev/null");
-        if (status != 0){
-            res = jokes[rand() % jokes.size()];
-        } else {
-            status = system("curl -HI --silent  --output /dev/null  \"Accept: text/plain\" https://icanhazdadjoke.com/ > /tmp/.joke");
-            if (status != 0) {
-                res = jokes[rand() % jokes.size()];
-            } else {
-                int jokeFd = open("/tmp/.joke", O_RDONLY);
-                char buf;
-                int rbytes;
-                while ((rbytes = read(jokeFd, &buf, 1) > 0))
-                    res += buf;
-                res += "\n";
-                close(jokeFd);
-            }
-        }
-        message = ":" + __users[fd].getNickname() + " PRIVMSG " + __users[fd].getNickname() + " :" + res + "\n";
-    } else if (command  == "/time") {
-        std::time_t now = std::time(NULL);
-        char buffer[80];
-        std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
-        std::string current_time(buffer);
-        message = ":" + __users[fd].getNickname() + " PRIVMSG " + __users[fd].getNickname() + " :" + current_time + "\n";
-    }
-    
-    sendMessage(fd, message);
+    std::cout << command << fd << std::endl;
+    /* std::vector<std::string> jokes; */
+    /**/
+    /* insertJokes(jokes); */
+    /**/
+    /* std::string message; */
+    /**/
+    /* if (command == "/joke") */
+    /* { */
+    /*     std::string  res = ""; */
+    /*     int status = system("which curl > /dev/null"); */
+    /*     if (status != 0){ */
+    /*         res = jokes[rand() % jokes.size()]; */
+    /*     } else { */
+    /*         status = system("curl -HI --silent  --output /dev/null  \"Accept: text/plain\" https://icanhazdadjoke.com/ > /tmp/.joke"); */
+    /*         if (status != 0) { */
+    /*             res = jokes[rand() % jokes.size()]; */
+    /*         } else { */
+    /*             int jokeFd = open("/tmp/.joke", O_RDONLY); */
+    /*             char buf; */
+    /*             int rbytes; */
+    /*             while ((rbytes = read(jokeFd, &buf, 1) > 0)) */
+    /*                 res += buf; */
+    /*             res += "\n"; */
+    /*             close(jokeFd); */
+    /*         } */
+    /*     } */
+    /*     message = ":" + __users[fd].getNickname() + " PRIVMSG " + __users[fd].getNickname() + " :" + res + "\n"; */
+    /* } else if (command  == "/time") { */
+    /*     std::time_t now = std::time(NULL); */
+    /*     char buffer[80]; */
+    /*     std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", std::localtime(&now)); */
+    /*     std::string current_time(buffer); */
+    /*     message = ":" + __users[fd].getNickname() + " PRIVMSG " + __users[fd].getNickname() + " :" + current_time + "\n"; */
+    /* } */
+    /**/
+    /* sendMessage(fd, message); */
 }
